@@ -10,8 +10,6 @@
 	# HTTPS mode: when DOMAIN is provided, use it as the site address
 	{$DOMAIN:localhost}
 
-	encode zstd gzip
-
 	@api path /api/*
 	reverse_proxy app:3000
 
@@ -19,6 +17,8 @@
 	reverse_proxy app:3000
 
 	reverse_proxy app:3000
+
+	encode zstd gzip
 
 	log {
 		output file /data/access.log {
@@ -32,8 +32,6 @@
 # Lets you test on a raw IP (e.g. http://119.23.72.86/) before you
 # buy a domain. Browser will not warn since Caddy serves plain HTTP.
 :80 {
-	encode zstd gzip
-
 	@api path /api/*
 	reverse_proxy app:3000
 
@@ -41,6 +39,8 @@
 	reverse_proxy app:3000
 
 	reverse_proxy app:3000
+
+	encode zstd gzip
 
 	log {
 		output file /data/access.log {
