@@ -1,0 +1,713 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "72fbf5e8-9956-4c1d-a732-5a98fdc4bfd6",
+  "prevId": "e29e0afe-0c66-4d9c-9c40-f6015e4b483a",
+  "tables": {
+    "habit_completions": {
+      "name": "habit_completions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "habit_id": {
+          "name": "habit_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completed_on": {
+          "name": "completed_on",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        }
+      },
+      "indexes": {
+        "habit_day_uniq": {
+          "name": "habit_day_uniq",
+          "columns": [
+            "habit_id",
+            "completed_on"
+          ],
+          "isUnique": true
+        },
+        "completion_habit_date_idx": {
+          "name": "completion_habit_date_idx",
+          "columns": [
+            "habit_id",
+            "completed_on"
+          ],
+          "isUnique": false
+        },
+        "completion_date_idx": {
+          "name": "completion_date_idx",
+          "columns": [
+            "completed_on"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "habit_completions_habit_id_habits_id_fk": {
+          "name": "habit_completions_habit_id_habits_id_fk",
+          "tableFrom": "habit_completions",
+          "tableTo": "habits",
+          "columnsFrom": [
+            "habit_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "completion_day_range_check": {
+          "name": "completion_day_range_check",
+          "value": "\"habit_completions\".\"completed_on\" BETWEEN 19000101 AND 29991231"
+        }
+      }
+    },
+    "habit_streaks": {
+      "name": "habit_streaks",
+      "columns": {
+        "habit_id": {
+          "name": "habit_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "current_streak": {
+          "name": "current_streak",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "longest_streak": {
+          "name": "longest_streak",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "last_check_on": {
+          "name": "last_check_on",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "habit_streaks_habit_id_habits_id_fk": {
+          "name": "habit_streaks_habit_id_habits_id_fk",
+          "tableFrom": "habit_streaks",
+          "tableTo": "habits",
+          "columnsFrom": [
+            "habit_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "habits": {
+      "name": "habits",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "frequency_type": {
+          "name": "frequency_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "weekly_days_mask": {
+          "name": "weekly_days_mask",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "interval_days": {
+          "name": "interval_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "times_per_period": {
+          "name": "times_per_period",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "period_days": {
+          "name": "period_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_value": {
+          "name": "target_value",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_unit": {
+          "name": "target_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reminder_time": {
+          "name": "reminder_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reminder_days_mask": {
+          "name": "reminder_days_mask",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "paused_until": {
+          "name": "paused_until",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        }
+      },
+      "indexes": {
+        "habits_status_idx": {
+          "name": "habits_status_idx",
+          "columns": [
+            "status",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "habits_frequency_type_check": {
+          "name": "habits_frequency_type_check",
+          "value": "\"habits\".\"frequency_type\" IN ('daily','weekly','interval')"
+        },
+        "habits_status_check": {
+          "name": "habits_status_check",
+          "value": "\"habits\".\"status\" IN ('active','paused','archived')"
+        },
+        "habits_weekly_mask_check": {
+          "name": "habits_weekly_mask_check",
+          "value": "(\"habits\".\"frequency_type\" != 'weekly') OR (\"habits\".\"weekly_days_mask\" > 0)"
+        },
+        "habits_interval_check": {
+          "name": "habits_interval_check",
+          "value": "(\"habits\".\"frequency_type\" != 'interval') OR (\"habits\".\"interval_days\" IS NOT NULL AND \"habits\".\"interval_days\" > 0)"
+        },
+        "habits_target_value_check": {
+          "name": "habits_target_value_check",
+          "value": "\"habits\".\"target_value\" IS NULL OR \"habits\".\"target_value\" > 0"
+        }
+      }
+    },
+    "journal_categories": {
+      "name": "journal_categories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "archived": {
+          "name": "archived",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        }
+      },
+      "indexes": {
+        "journal_category_name_uniq": {
+          "name": "journal_category_name_uniq",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        },
+        "journal_category_archived_idx": {
+          "name": "journal_category_archived_idx",
+          "columns": [
+            "archived",
+            "sort_order"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "journal_category_name_len_check": {
+          "name": "journal_category_name_len_check",
+          "value": "length(\"journal_categories\".\"name\") BETWEEN 1 AND 40"
+        }
+      }
+    },
+    "journal_entries": {
+      "name": "journal_entries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "entry_date": {
+          "name": "entry_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "content_html": {
+          "name": "content_html",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mood_score": {
+          "name": "mood_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mood_label": {
+          "name": "mood_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        }
+      },
+      "indexes": {
+        "journal_entry_date_idx": {
+          "name": "journal_entry_date_idx",
+          "columns": [
+            "entry_date",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "journal_updated_idx": {
+          "name": "journal_updated_idx",
+          "columns": [
+            "updated_at"
+          ],
+          "isUnique": false
+        },
+        "journal_category_idx": {
+          "name": "journal_category_idx",
+          "columns": [
+            "category_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "journal_mood_score_check": {
+          "name": "journal_mood_score_check",
+          "value": "\"journal_entries\".\"mood_score\" IS NULL OR (\"journal_entries\".\"mood_score\" BETWEEN 1 AND 5)"
+        },
+        "journal_mood_pair_check": {
+          "name": "journal_mood_pair_check",
+          "value": "(\"journal_entries\".\"mood_score\" IS NULL AND \"journal_entries\".\"mood_label\" IS NULL) OR (\"journal_entries\".\"mood_score\" IS NOT NULL AND \"journal_entries\".\"mood_label\" IS NOT NULL)"
+        },
+        "journal_entry_date_range_check": {
+          "name": "journal_entry_date_range_check",
+          "value": "\"journal_entries\".\"entry_date\" BETWEEN 19000101 AND 29991231"
+        }
+      }
+    },
+    "journal_links": {
+      "name": "journal_links",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "from_entry_id": {
+          "name": "from_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "to_entry_id": {
+          "name": "to_entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "to_target": {
+          "name": "to_target",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "journal_link_from_idx": {
+          "name": "journal_link_from_idx",
+          "columns": [
+            "from_entry_id",
+            "position"
+          ],
+          "isUnique": false
+        },
+        "journal_link_to_idx": {
+          "name": "journal_link_to_idx",
+          "columns": [
+            "to_entry_id"
+          ],
+          "isUnique": false
+        },
+        "journal_link_target_idx": {
+          "name": "journal_link_target_idx",
+          "columns": [
+            "to_target"
+          ],
+          "isUnique": false
+        },
+        "journal_link_uniq": {
+          "name": "journal_link_uniq",
+          "columns": [
+            "from_entry_id",
+            "to_target",
+            "position"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "journal_links_from_entry_id_journal_entries_id_fk": {
+          "name": "journal_links_from_entry_id_journal_entries_id_fk",
+          "tableFrom": "journal_links",
+          "tableTo": "journal_entries",
+          "columnsFrom": [
+            "from_entry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "journal_link_position_check": {
+          "name": "journal_link_position_check",
+          "value": "\"journal_links\".\"position\" >= 0"
+        },
+        "journal_link_target_check": {
+          "name": "journal_link_target_check",
+          "value": "length(\"journal_links\".\"to_target\") > 0"
+        }
+      }
+    },
+    "journal_tags": {
+      "name": "journal_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "entry_id": {
+          "name": "entry_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tag": {
+          "name": "tag",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "entry_tag_uniq": {
+          "name": "entry_tag_uniq",
+          "columns": [
+            "entry_id",
+            "tag"
+          ],
+          "isUnique": true
+        },
+        "journal_tag_idx": {
+          "name": "journal_tag_idx",
+          "columns": [
+            "tag"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "journal_tags_entry_id_journal_entries_id_fk": {
+          "name": "journal_tags_entry_id_journal_entries_id_fk",
+          "tableFrom": "journal_tags",
+          "tableTo": "journal_entries",
+          "columnsFrom": [
+            "entry_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

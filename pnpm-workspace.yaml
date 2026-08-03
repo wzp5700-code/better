@@ -1,0 +1,8 @@
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  sharp: true
+minimumReleaseAgeExclude:
+  - '@types/better-sqlite3@9.6.0'
+overrides:
+  zod: 3.23.8

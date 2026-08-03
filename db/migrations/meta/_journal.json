@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1785642146118,
+      "tag": "0000_warm_ink",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1785679124611,
+      "tag": "0001_busy_zeigeist",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785679227737,
+      "tag": "0002_huge_stellaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1785719951918,
+      "tag": "0003_condemned_doorman",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1785732819220,
+      "tag": "0004_slim_ted_forrester",
+      "breakpoints": true
+    }
+  ]
+}

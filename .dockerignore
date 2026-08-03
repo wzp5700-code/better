@@ -1,0 +1,38 @@
+# dependencies
+node_modules
+.pnpm-store
+.pnpm-debug.log*
+
+# next.js
+.next
+out
+build
+
+# production
+*.local
+
+# data & backups
+/data
+*.db
+*.db-shm
+*.db-wal
+
+# native scaffolds (generated locally, not needed in image)
+ios
+windows
+android
+
+# env
+.env*
+!.env.example
+
+# logs
+*.log
+
+# editor
+.vscode
+.idea
+
+# git
+.git
+.gitignore
