@@ -25,6 +25,12 @@ jobs:
           script: |
             set -euo pipefail
 
+            # Ensure git is installed (Alibaba swas images sometimes lack it)
+            if ! command -v git >/dev/null 2>&1; then
+              echo "--- installing git ---"
+              (apt-get update -qq && apt-get install -y -qq git ca-certificates) || (yum install -y -q git ca-certificates)
+            fi
+
             # Clone on first run, pull on subsequent runs.
             if [ ! -d ~/personal-growth-desk/.git ]; then
               echo "--- first run: cloning repo ---"
@@ -36,6 +42,17 @@ jobs:
               cd ~/personal-growth-desk
               git fetch --depth=1 origin main
               git reset --hard origin/main
+            fi
+
+            echo "--- ensuring docker ---"
+            if ! command -v docker >/dev/null 2>&1; then
+              echo "--- installing docker ---"
+              (apt-get install -y -qq docker.io docker-compose-v2) || (yum install -y -q docker docker-compose-plugin)
+              systemctl enable --now docker
+            fi
+            if ! docker compose version >/dev/null 2>&1; then
+              echo "docker compose not available after install — aborting"
+              exit 1
             fi
 
             echo "--- syncing env ---"
@@ -55,6 +72,12 @@ jobs:
             docker compose -f docker/docker-compose.yml pull caddy || true
             docker compose -f docker/docker-compose.yml build app
             docker compose -f docker/docker-compose.yml up -d
+
+            # Wait for user-owned docker socket to be ready (after install)
+            for i in $(seq 1 10); do
+              if docker info >/dev/null 2>&1; then break; fi
+              sleep 1
+            done
 
             echo "--- waiting for health ---"
             for i in $(seq 1 30); do
