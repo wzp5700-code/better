@@ -43,7 +43,7 @@ export function isReminderDay(date: Date, mask: number): boolean {
   return (mask & dayBitForDate(date)) !== 0
 }
 
-interface DueHabit {
+export interface DueHabit {
   id: number
   name: string
   reminderTime: string

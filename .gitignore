@@ -44,6 +44,28 @@ next-env.d.ts
 /data/*.db
 /data/*.db-shm
 /data/*.db-wal
+/backups
 
 # drizzle metadata
 /db/migrations/meta/_journal.json.bak
+
+# secrets — NEVER commit
+/secrets
+*.json.enc
+firebase-adminsdk-*.json
+*-service-account.json
+
+# native scaffolds (generated locally, not needed in image)
+ios
+windows
+android
+
+# logs
+*.log
+
+# editor
+.vscode
+.idea
+
+# OS
+Thumbs.db
