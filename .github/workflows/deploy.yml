@@ -28,7 +28,7 @@ jobs:
             # Ensure git is installed (Alibaba swas images sometimes lack it)
             if ! command -v git >/dev/null 2>&1; then
               echo "--- installing git ---"
-              (apt-get update -qq && apt-get install -y -qq git ca-certificates) || (yum install -y -q git ca-certificates)
+              (sudo -E apt-get update -qq && sudo -E apt-get install -y -qq git ca-certificates) || (sudo -E yum install -y -q git ca-certificates)
             fi
 
             # Clone on first run, pull on subsequent runs.
@@ -47,8 +47,10 @@ jobs:
             echo "--- ensuring docker ---"
             if ! command -v docker >/dev/null 2>&1; then
               echo "--- installing docker ---"
-              (apt-get install -y -qq docker.io docker-compose-v2) || (yum install -y -q docker docker-compose-plugin)
-              systemctl enable --now docker
+              (sudo -E apt-get install -y -qq docker.io docker-compose-v2) || (sudo -E yum install -y -q docker docker-compose-plugin)
+              sudo systemctl enable --now docker
+              # give the user access without needing logout
+              sudo usermod -aG docker $USER || true
             fi
             if ! docker compose version >/dev/null 2>&1; then
               echo "docker compose not available after install — aborting"
