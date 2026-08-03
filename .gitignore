@@ -69,3 +69,9 @@ android
 
 # OS
 Thumbs.db
+
+# chat / IM screenshots — never commit
+微信图片_*.png
+微信图片_*.jpg
+*_微信图片_*.png
+*_微信图片_*.jpg

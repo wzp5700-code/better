@@ -33,8 +33,13 @@ jobs:
 
             echo "--- syncing env ---"
             if [ ! -f .env ]; then
+              # DOMAIN is optional — leave empty to access via raw IP over HTTP
               echo "DOMAIN=${{ secrets.VPS_DOMAIN }}" > .env
-              echo "ALLOWED_ORIGINS=https://${{ secrets.VPS_DOMAIN }}" >> .env
+              if [ -n "${{ secrets.VPS_DOMAIN }}" ]; then
+                echo "ALLOWED_ORIGINS=https://${{ secrets.VPS_DOMAIN }}" >> .env
+              else
+                echo "ALLOWED_ORIGINS=http://${{ secrets.VPS_HOST }}" >> .env
+              fi
               echo "DATABASE_URL=./data/app.db" >> .env
               echo "PUSH_CHECK_INTERVAL_MS=60000" >> .env
             fi
@@ -46,8 +51,13 @@ jobs:
 
             echo "--- waiting for health ---"
             for i in $(seq 1 30); do
-              if curl -fsS "https://${{ secrets.VPS_DOMAIN }}/api/health" >/dev/null 2>&1; then
-                echo "health OK after ${i}s"
+              if [ -n "${{ secrets.VPS_DOMAIN }}" ]; then
+                URL="https://${{ secrets.VPS_DOMAIN }}/api/health"
+              else
+                URL="http://${{ secrets.VPS_HOST }}/api/health"
+              fi
+              if curl -fsS "$URL" >/dev/null 2>&1; then
+                echo "health OK after ${i}s ($URL)"
                 exit 0
               fi
               sleep 1

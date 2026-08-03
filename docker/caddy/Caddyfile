@@ -1,20 +1,51 @@
-# Reverse-proxy Next.js with automatic HTTPS via Let's Encrypt.
-# Set DOMAIN as an environment variable (see docker-compose.yml).
-{$DOMAIN}
+# Reverse-proxy Next.js.
+#
+# Two modes:
+#   1. Domain set (HTTPS) — automatic Let's Encrypt via {$DOMAIN}
+#   2. No domain (HTTP) — listen on :80 only, for IP-based access
+#
+# Set DOMAIN env var to switch. Leave it empty for HTTP-only.
 
-encode zstd gzip
+{
+	# HTTPS mode: when DOMAIN is provided, use it as the site address
+	{$DOMAIN:localhost}
 
-@api path /api/*
-reverse_proxy app:3000
+	encode zstd gzip
 
-@static path /_next/*
-reverse_proxy app:3000
+	@api path /api/*
+	reverse_proxy app:3000
 
-reverse_proxy app:3000
+	@static path /_next/*
+	reverse_proxy app:3000
 
-log {
-    output file /data/access.log {
-        roll_size 10mb
-        roll_keep 5
-    }
+	reverse_proxy app:3000
+
+	log {
+		output file /data/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
+
+# HTTP-only mode: when DOMAIN is empty, serve on plain HTTP only.
+# Lets you test on a raw IP (e.g. http://119.23.72.86/) before you
+# buy a domain. Browser will not warn since Caddy serves plain HTTP.
+:80 {
+	encode zstd gzip
+
+	@api path /api/*
+	reverse_proxy app:3000
+
+	@static path /_next/*
+	reverse_proxy app:3000
+
+	reverse_proxy app:3000
+
+	log {
+		output file /data/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
 }

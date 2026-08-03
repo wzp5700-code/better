@@ -37,10 +37,9 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     environment:
-      # Domain that Caddy will request a Let's Encrypt cert for
-      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
-      # Optional: Cloudflare DNS challenge (recommended for wildcard certs)
-      # CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+      # Domain that Caddy will request a Let's Encrypt cert for.
+      # Leave empty to access via raw IP over plain HTTP (no TLS).
+      DOMAIN: ${DOMAIN:-}
     networks:
       - internal
       - default
