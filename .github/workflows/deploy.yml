@@ -24,11 +24,19 @@ jobs:
           command_timeout: 12m
           script: |
             set -euo pipefail
-            cd ~/personal-growth-desk
 
-            echo "--- pulling latest ---"
-            git fetch --depth=1 origin main
-            git reset --hard origin/main
+            # Clone on first run, pull on subsequent runs.
+            if [ ! -d ~/personal-growth-desk/.git ]; then
+              echo "--- first run: cloning repo ---"
+              cd ~
+              git clone https://github.com/wzp5700-code/better.git personal-growth-desk
+              cd personal-growth-desk
+            else
+              echo "--- updating existing repo ---"
+              cd ~/personal-growth-desk
+              git fetch --depth=1 origin main
+              git reset --hard origin/main
+            fi
 
             echo "--- syncing env ---"
             if [ ! -f .env ]; then
