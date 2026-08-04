@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/layout/theme-provider"
 import { QueryProvider } from "@/components/shared/query-provider"
 import { Toaster } from "@/components/shared/toaster"
 import { OfflineNotice } from "@/components/shared/offline-notice"
+import { PwaInstallPrompt } from "@/components/shared/pwa-install-prompt"
 import { AppShell } from "@/components/layout/app-shell"
 import "./globals.css"
 
@@ -37,6 +38,7 @@ export default function RootLayout({
             <AppShell>{children}</AppShell>
             <Toaster />
             <OfflineNotice />
+            <PwaInstallPrompt />
           </QueryProvider>
         </ThemeProvider>
       </body>
