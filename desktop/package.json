@@ -1,0 +1,34 @@
+{
+  "name": "personal-growth-desk-desktop",
+  "version": "1.0.0",
+  "description": "个人成长台 - Windows 桌面版",
+  "main": "main.js",
+  "author": "wzp5700",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --win portable",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.personal.growthdesk.desktop",
+    "productName": "个人成长台",
+    "files": ["main.js", "preload.js"],
+    "win": {
+      "target": ["nsis"],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "个人成长台"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

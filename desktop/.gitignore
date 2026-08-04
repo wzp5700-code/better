@@ -1,0 +1,9 @@
+# deps
+node_modules
+
+# build output
+dist
+*.tgz
+
+# icon is generated from public/icons via scripts/gen-ico.mjs — commit it
+# so packaging works without regenerating.
