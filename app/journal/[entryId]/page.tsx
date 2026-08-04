@@ -4,18 +4,20 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { Save, Pencil, X } from "lucide-react"
+import { ChevronLeft, Save, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { JournalEditorLoader, type JournalEditorHandle } from "@/components/journal/editor/journal-editor-loader"
-import { CategorySelector } from "@/components/journal/category-selector"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  JournalEditorLoader,
+  type JournalEditorHandle,
+} from "@/components/journal/editor/journal-editor-loader"
+import { EditorToolbar } from "@/components/journal/editor/editor-toolbar"
+import { CategoryPicker } from "@/components/journal/category-picker-popover"
 import { MoodSlider } from "@/components/journal/mood-slider"
 import { BacklinksPanel } from "@/components/journal/backlinks-panel"
-import { JournalDeleteButton } from "@/components/journal/journal-delete-button"
 import {
+  useDeleteJournalMutation,
   useJournalEntryQuery,
   useUpdateJournalMutation,
 } from "@/lib/queries/journal"
@@ -33,27 +35,30 @@ export default function JournalEntryPage({
   const router = useRouter()
   const { data, isLoading, error } = useJournalEntryQuery(id)
   const update = useUpdateJournalMutation()
+  const del = useDeleteJournalMutation()
 
-  const [editing, setEditing] = React.useState(false)
+  // 一进入页面就进入"可写"状态，无需按"编辑"按钮
   const editorRef = React.useRef<JournalEditorHandle>(null)
+
   const [draftScore, setDraftScore] = React.useState<number | null>(null)
   const [draftLabel, setDraftLabel] = React.useState<string | null>(null)
   const [draftCategoryId, setDraftCategoryId] = React.useState<number | null>(null)
+  const [dirty, setDirty] = React.useState(false)
 
-  const enterEdit = () => {
+  // 拉取远端数据完成 → 初始化草稿（首次或切换到不同 entry）
+  React.useEffect(() => {
     if (!data) return
     setDraftScore(data.moodScore)
-    setDraftLabel(data.moodLabel as never)
+    setDraftLabel((data.moodLabel as never) ?? null)
     setDraftCategoryId(data.category?.id ?? null)
-    setEditing(true)
-  }
-  const cancelEdit = () => {
-    setEditing(false)
-  }
+    setDirty(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.id])
 
   const onSave = async () => {
+    if (!data) return
     const handle = editorRef.current
-    if (!handle || !data) return
+    if (!handle) return
     if (handle.isEmpty()) {
       toast.error("内容不能为空")
       return
@@ -63,12 +68,12 @@ export default function JournalEntryPage({
       id: data.id,
       content: json as never,
       moodScore: draftScore,
-      moodLabel: draftLabel as never,
+      moodLabel: (draftLabel as never) ?? null,
       categoryId: draftCategoryId,
     })
     if (res.ok) {
       toast.success("已保存")
-      setEditing(false)
+      setDirty(false)
       router.refresh()
     } else {
       toast.error(res.error)
@@ -92,167 +97,91 @@ export default function JournalEntryPage({
     )
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {formatDateKey(data.entryDate, "yyyy年M月d日")}
-          </h1>
-          <div className="flex items-center gap-2">
-            {data.category ? (
-              <Badge
-                variant="outline"
-                className="font-normal"
-                style={
-                  data.category.color
-                    ? {
-                        borderColor: data.category.color,
-                        color: data.category.color,
-                      }
-                    : undefined
-                }
-              >
-                {data.category.name}
-              </Badge>
-            ) : null}
-            {data.moodLabel ? (
-              <Badge variant="outline" className="font-normal">
-                {data.moodLabel}
-              </Badge>
-            ) : null}
-          </div>
+    <div className="space-y-3">
+      {/* 顶部条：左 = 返回 / 中 = 分类可点击切换 / 右 = 保存 */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" asChild aria-label="返回">
+          <Link href="/journal">
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+        </Button>
+
+        <div className="flex-1 flex justify-center">
+          <CategoryPicker
+            value={draftCategoryId}
+            onChange={(id) => {
+              setDraftCategoryId(id)
+              setDirty(true)
+            }}
+          />
         </div>
-        <div className="flex items-center gap-2">
-          {editing ? (
-            <>
-              <Button variant="ghost" onClick={cancelEdit}>
-                <X className="h-4 w-4" /> 取消
-              </Button>
-              <Button onClick={onSave} disabled={update.isPending}>
-                <Save className="h-4 w-4" />
-                {update.isPending ? "保存中…" : "保存"}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/journal">返回</Link>
-              </Button>
-              <Button variant="outline" onClick={enterEdit}>
-                <Pencil className="h-4 w-4" /> 编辑
-              </Button>
-              <JournalDeleteButton id={data.id} />
-            </>
-          )}
-        </div>
+
+        <Button
+          variant={dirty ? "default" : "ghost"}
+          size="icon"
+          onClick={onSave}
+          disabled={update.isPending}
+          aria-label="保存"
+        >
+          <Save className="h-5 w-5" />
+        </Button>
       </div>
 
-      {editing ? (
-        <>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">正文</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <JournalEditorLoader
-                ref={editorRef}
-                initialContent={safeParseJson(data.content)}
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">分类与心情</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="entry-category">分类</Label>
-                  <Link
-                    href="/categories"
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    管理分类
-                  </Link>
-                </div>
-                <CategorySelector
-                  value={draftCategoryId}
-                  onChange={setDraftCategoryId}
-                />
-              </div>
-              <MoodSlider
-                value={draftScore}
-                onChange={(score, label) => {
-                  setDraftScore(score)
-                  setDraftLabel(label)
-                }}
-              />
-            </CardContent>
-          </Card>
-        </>
-      ) : (
-        <>
-          <Card>
-            <CardContent className="py-6">
-              {data.contentHtml ? (
-                <div
-                  className="prose-journal"
-                  dangerouslySetInnerHTML={{ __html: data.contentHtml }}
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground">（空白）</p>
-              )}
-              {data.tags.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-1">
-                  {data.tags.map((tag: string) => (
-                    <Link
-                      key={tag}
-                      href={`/journal?tag=${encodeURIComponent(tag)}`}
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      #{tag}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
+      {/* 日期 + 心情（精简显示在分类条下） */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+        <span>{formatDateKey(data.entryDate, "yyyy年M月d日")}</span>
+        {data.moodLabel ? <span>{data.moodLabel}</span> : null}
+      </div>
 
-          {data.outgoingLinks && data.outgoingLinks.length > 0 ? (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">引用的日记</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {data.outgoingLinks.map((l: { id: number; toTarget: string; toEntryId: number | null; toEntryDate: number | null; toEntryTitle: string | null }) =>
-                  l.toEntryId != null ? (
-                    <Link
-                      key={l.id}
-                      href={`/journal/${l.toEntryId}`}
-                      className="block text-sm hover:underline"
-                    >
-                      <span className="text-muted-foreground text-xs">
-                        {l.toEntryDate
-                          ? formatDateKey(l.toEntryDate, "yyyy年M月d日")
-                          : "未知日期"}
-                      </span>
-                      <div className="line-clamp-1">
-                        {l.toEntryTitle ?? `[[${l.toTarget}]]`}
-                      </div>
-                    </Link>
-                  ) : (
-                    <div key={l.id} className="text-sm text-muted-foreground">
-                      <span className="text-xs">未解析 · {l.toTarget}</span>
-                    </div>
-                  )
-                )}
-              </CardContent>
-            </Card>
-          ) : null}
+      {/* 编辑区（点进即可写） */}
+      <Card>
+        <CardContent className="p-0">
+          <JournalEditorLoader
+            ref={editorRef}
+            initialContent={safeParseJson(data.content)}
+            onUpdate={() => setDirty(true)}
+          />
+        </CardContent>
+      </Card>
 
-          <BacklinksPanel links={data.incomingLinks ?? []} />
-        </>
-      )}
+      {/* 富文本工具栏（紧贴编辑卡下方，sticky 悬浮在屏幕底部） */}
+      <EditorToolbar editor={editorRef.current?.getEditor() ?? null} />
+
+      {/* 心情 + 删除（次要操作） */}
+      <Card>
+        <CardContent className="space-y-4">
+          <MoodSlider
+            value={draftScore}
+            onChange={(score, label) => {
+              setDraftScore(score)
+              setDraftLabel(label)
+              setDirty(true)
+            }}
+          />
+          <div className="flex items-center justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={async () => {
+                if (!window.confirm("删除这篇日记？")) return
+                const res = await del.mutateAsync(data.id)
+                if (res.ok) {
+                  toast.success("已删除")
+                  router.push("/journal")
+                } else {
+                  toast.error(res.error)
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" /> 删除
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 反向链接（折叠到次要位置） */}
+      <BacklinksPanel links={data.incomingLinks ?? []} />
     </div>
   )
 }

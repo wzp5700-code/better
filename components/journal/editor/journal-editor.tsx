@@ -1,12 +1,12 @@
 "use client"
 
 import * as React from "react"
+import type { Editor } from "@tiptap/react"
 import { EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import Link from "@tiptap/extension-link"
 
-import { EditorToolbar } from "./editor-toolbar"
 import { WikiLinkExtension } from "../extensions/wiki-link-extension"
 import { TagExtension } from "../extensions/tag-extension"
 
@@ -14,6 +14,7 @@ export interface JournalEditorHandle {
   getJson: () => unknown
   isEmpty: () => boolean
   reset: (content: unknown) => void
+  getEditor: () => Editor | null
 }
 
 export const JournalEditor = React.forwardRef<
@@ -27,7 +28,6 @@ export const JournalEditor = React.forwardRef<
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        // we don't need these yet; keep editor light
         codeBlock: false,
       }),
       Placeholder.configure({
@@ -49,7 +49,7 @@ export const JournalEditor = React.forwardRef<
     editorProps: {
       attributes: {
         class:
-          "prose-journal min-h-[180px] max-w-none px-4 py-3 focus:outline-none",
+          "prose-journal min-h-[300px] max-w-none px-4 py-4 focus:outline-none",
       },
     },
   })
@@ -60,6 +60,7 @@ export const JournalEditor = React.forwardRef<
     reset: (content) => {
       editor?.commands.setContent(content ?? { type: "doc", content: [{ type: "paragraph" }] })
     },
+    getEditor: () => editor,
   }))
 
   if (!editor) {
@@ -72,7 +73,6 @@ export const JournalEditor = React.forwardRef<
 
   return (
     <div className="rounded-md border bg-card">
-      <EditorToolbar editor={editor} />
       <EditorContent editor={editor} />
     </div>
   )

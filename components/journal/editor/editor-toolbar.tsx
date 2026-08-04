@@ -7,6 +7,7 @@ import { Bold, Italic, Code, Heading2, List, Quote } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
+/** 独立工具栏组件 — 由父页面放在编辑卡下方。 */
 export function EditorToolbar({ editor }: { editor: Editor | null }) {
   if (!editor) return null
   const btn = (
@@ -31,7 +32,7 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
     <div
       role="toolbar"
       aria-label="格式"
-      className="flex items-center gap-1 border-b bg-card/50 px-2 py-1.5"
+      className="sticky bottom-3 z-10 mt-3 flex items-center gap-1 rounded-md border bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur"
     >
       {btn(
         "加粗",
