@@ -1,6 +1,6 @@
 import "server-only"
 
-import { asc, desc, eq } from "drizzle-orm"
+import { asc, desc, eq, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { books, type Book } from "@/db/schema"
@@ -11,11 +11,26 @@ import {
   type UpdateBookInput,
 } from "@/lib/validation/book"
 
+/**
+ * Reading list ordering:
+ *  1. Unfinished books (finishDate NULL) first, sorted by progress asc (少→多).
+ *     Books without progress (NULL) sort after those with a progress value.
+ *  2. Finished books last, sorted by finishDate desc (最近完成的在前).
+ */
 export async function listBooks(): Promise<Book[]> {
+  const unfinishedFirst = sql<number>`CASE WHEN ${books.finishDate} IS NULL THEN 0 ELSE 1 END`
+  // progress NULL → treat as 101 so it sorts after any explicit 0-100
+  const progressOrMax = sql<number>`COALESCE(${books.progress}, 101)`
+
   return db
     .select()
     .from(books)
-    .orderBy(desc(books.updatedAt), desc(books.id))
+    .orderBy(
+      asc(unfinishedFirst),
+      asc(progressOrMax),
+      desc(books.finishDate),
+      desc(books.updatedAt)
+    )
 }
 
 export async function getBook(id: number): Promise<Book | null> {
