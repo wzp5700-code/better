@@ -5,6 +5,7 @@ import { QueryProvider } from "@/components/shared/query-provider"
 import { Toaster } from "@/components/shared/toaster"
 import { OfflineNotice } from "@/components/shared/offline-notice"
 import { PwaInstallPrompt } from "@/components/shared/pwa-install-prompt"
+import { AuthGuard } from "@/components/shared/auth-guard"
 import { AppShell } from "@/components/layout/app-shell"
 import "./globals.css"
 
@@ -35,7 +36,9 @@ export default function RootLayout({
           enableSystem={false}
         >
           <QueryProvider>
-            <AppShell>{children}</AppShell>
+            <AuthGuard>
+              <AppShell>{children}</AppShell>
+            </AuthGuard>
             <Toaster />
             <OfflineNotice />
             <PwaInstallPrompt />
