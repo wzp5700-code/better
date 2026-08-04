@@ -1,6 +1,6 @@
 import "server-only"
 
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto"
+import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto"
 
 /**
  * Tokens are 32-byte random strings, base64url-encoded.
@@ -14,25 +14,31 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto"
  */
 
 const TOKEN_BYTES = 32
-const PAIRING_CODE_BYTES = 16
+
+/**
+ * Pairing codes use a deliberately unambiguous alphabet:
+ * - No `0`/`O`, `1`/`I`/`L`, `Z`/`2` confusions
+ * - No punctuation (the old base64url version contained `-` and `_`, which
+ *   collided with the grouping `-` and made manual entry near-impossible)
+ */
+const PAIRING_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
+const PAIRING_CHUNK = 4
+const PAIRING_GROUPS = 4
 
 export function generateToken(): string {
   return randomBytes(TOKEN_BYTES).toString("base64url")
 }
 
 export function generatePairingCode(): string {
-  // 16 bytes → 22 base64url chars (no padding). Group into 4 fixed-width
-  // chunks (5-6-5-6) for readability. Explicit slicing avoids regex
-  // splitting on `-` / `_` characters which are valid in base64url.
-  const raw = randomBytes(PAIRING_CODE_BYTES).toString("base64url")
-  return [
-    raw.slice(0, 5),
-    raw.slice(5, 11),
-    raw.slice(11, 16),
-    raw.slice(16, 22),
-  ]
-    .join("-")
-    .toUpperCase()
+  const groups: string[] = []
+  for (let g = 0; g < PAIRING_GROUPS; g++) {
+    let chunk = ""
+    for (let i = 0; i < PAIRING_CHUNK; i++) {
+      chunk += PAIRING_ALPHABET[randomInt(PAIRING_ALPHABET.length)]!
+    }
+    groups.push(chunk)
+  }
+  return groups.join("-")
 }
 
 export function hashToken(token: string): string {

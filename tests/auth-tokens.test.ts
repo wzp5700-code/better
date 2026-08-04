@@ -22,13 +22,13 @@ describe("auth/tokens", () => {
 
   it("generatePairingCode has the XXXX-XXXX-XXXX-XXXX shape", () => {
     const c = generatePairingCode()
-    // The output contains raw base64url chars, which may include `-` and `_`
-    // that confuse a naive split. We check the high-level structure: the
-    // dashed-string is built from 4 contiguous chunks of the 22-char
-    // base64url string, joined by 3 dashes. Total length = 22 + 3 = 25
-    // (the joining dashes add 3; base64url chars inside chunks don't add).
-    expect(c).toMatch(/^[A-Z0-9_-]{4,6}-[A-Z0-9_-]{4,6}-[A-Z0-9_-]{4,6}-[A-Z0-9_-]{4,6}$/)
-    expect(c.length).toBe(25)
+    // Unambiguous alphabet: 4 groups of 4 chars each, no punctuation.
+    // Alphabet = 23456789 + ABCDEFGHJKMNPQRSTUVWXYZ (no 0/1/I/L/O).
+    // Total length = 4*4 + 3 dashes = 19.
+    expect(c).toMatch(/^[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}$/)
+    expect(c.length).toBe(19)
+    // Sanity: no truly ambiguous chars (0, 1, I, L, O)
+    expect(c).not.toMatch(/[01ILO]/)
   })
 
   it("hashToken is deterministic", () => {
