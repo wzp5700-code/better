@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CalendarDays, BookOpen, Home, CalendarRange, BookMarked } from "lucide-react"
+import { CalendarDays, BookOpen, Home, BookMarked } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -10,7 +10,6 @@ const ITEMS = [
   { href: "/", label: "今日", icon: Home },
   { href: "/habits", label: "习惯", icon: CalendarDays },
   { href: "/journal", label: "日记", icon: BookOpen },
-  { href: "/calendar", label: "日历", icon: CalendarRange },
   { href: "/reading", label: "阅读", icon: BookMarked },
 ] as const
 

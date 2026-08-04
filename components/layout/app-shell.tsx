@@ -1,6 +1,6 @@
 import * as React from "react"
 import Link from "next/link"
-import { Settings } from "lucide-react"
+import { Settings, CalendarRange } from "lucide-react"
 
 import { PrimaryNav } from "@/components/layout/primary-nav"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
@@ -20,6 +20,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mt-auto pt-6">
           <Separator className="mb-4" />
           <div className="space-y-1">
+            <Link
+              href="/calendar"
+              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <CalendarRange className="h-4 w-4" aria-hidden />
+              <span>日历</span>
+            </Link>
             <Link
               href="/settings/devices"
               className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -41,6 +48,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           王彦昊迭代平台
         </Link>
         <div className="flex items-center gap-1">
+          <Link
+            href="/calendar"
+            aria-label="日历"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <CalendarRange className="h-4 w-4" />
+          </Link>
           <Link
             href="/settings/devices"
             aria-label="设备"
