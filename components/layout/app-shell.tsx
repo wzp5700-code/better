@@ -1,5 +1,6 @@
 import * as React from "react"
 import Link from "next/link"
+import { Settings } from "lucide-react"
 
 import { PrimaryNav } from "@/components/layout/primary-nav"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
@@ -18,9 +19,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <PrimaryNav orientation="vertical" />
         <div className="mt-auto pt-6">
           <Separator className="mb-4" />
-          <div className="flex items-center justify-between px-2">
-            <span className="text-xs text-muted-foreground">主题</span>
-            <ThemeToggle />
+          <div className="space-y-1">
+            <Link
+              href="/settings/devices"
+              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <Settings className="h-4 w-4" aria-hidden />
+              <span>设备</span>
+            </Link>
+            <div className="flex items-center justify-between px-2">
+              <span className="text-xs text-muted-foreground">主题</span>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </aside>
@@ -30,7 +40,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Link href="/" className="text-base font-semibold tracking-tight">
           王彦昊迭代平台
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <Link
+            href="/settings/devices"
+            aria-label="设备"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <Settings className="h-4 w-4" />
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="flex-1 min-w-0">

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CalendarDays, BookOpen, Home, CalendarRange, Settings, BookMarked } from "lucide-react"
+import { CalendarDays, BookOpen, Home, CalendarRange, BookMarked } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,7 +12,6 @@ const ITEMS = [
   { href: "/journal", label: "日记", icon: BookOpen },
   { href: "/calendar", label: "日历", icon: CalendarRange },
   { href: "/reading", label: "阅读", icon: BookMarked },
-  { href: "/settings/devices", label: "设备", icon: Settings },
 ] as const
 
 export function PrimaryNav({ orientation = "horizontal" }: { orientation?: "horizontal" | "vertical" }) {
