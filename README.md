@@ -1,18 +1,52 @@
 # 个人成长台
 
-一个安静的个人成长台：习惯追踪 + 日记。单用户、本地自托管、禅意风格。
+一个安静的个人成长台：习惯追踪 + 日记。单用户、自托管、禅意风格。
 
-> MVP 范围仅包含**习惯**与**日记**两个模块。目标管理、任务、阅读、AI 等延后实现。
+> 核心功能：习惯追踪 + 日记 + 分类 + 日历 + 多设备配对。
+> 已实现桌面客户端（Electron）、PWA、VPS 自托管。
 
 ## 技术栈
 
 - Next.js 15（App Router）+ React 19 + TypeScript
 - Tailwind CSS + shadcn/ui（New York / Neutral，深色默认）
-- Drizzle ORM + better-sqlite3（本地 SQLite，`./data/app.db`）
+- Drizzle ORM + better-sqlite3（SQLite）
 - TipTap（自定义 `[[wiki-link]]` 与 `#tag` 扩展）
 - react-calendar-heatmap（习惯历史热力图）
 - TanStack Query（读取）+ Server Actions（写入）
 - Vitest（单元测试）
+- Electron 33（Windows 桌面壳）+ electron-builder
+
+## 使用方式（三端）
+
+| 端 | 入口 | 说明 |
+|---|---|---|
+| **Windows 桌面** | `desktop/dist/个人成长台 Setup 1.0.0.exe` 安装 | Electron 壳，加载 VPS 数据 |
+| **PWA** | 浏览器打开站点 → 安装到主屏 | iOS / Android / 桌面浏览器 |
+| **浏览器** | 直接打开站点 | 最简单 |
+
+所有端连同一后端，数据实时同步；各端首次需**配对**（用主设备生成的配对码）。
+
+## 打包桌面版
+
+```powershell
+cd desktop
+pnpm install              # 装 electron + electron-builder
+node ../scripts/gen-ico.mjs   # 生成图标（已提交可跳过）
+pnpm dist                 # 打包 dist/个人成长台 Setup 1.0.0.exe
+```
+
+打包产物在 `desktop/dist/`。加载地址默认 `http://119.23.72.86`，可用 `PGD_URL` 环境变量覆盖。
+
+## 开发
+
+```powershell
+pnpm install
+pnpm db:generate        # 生成迁移 SQL
+pnpm db:migrate         # 应用迁移
+pnpm dev                # 启动 http://localhost:3000
+```
+
+首次启动会自动创建 `./data/app.db`。
 
 ## 开发
 
