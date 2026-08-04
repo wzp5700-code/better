@@ -1,27 +1,12 @@
-"use client"
-
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { Settings, CalendarRange } from "lucide-react"
 
 import { PrimaryNav } from "@/components/layout/primary-nav"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Separator } from "@/components/ui/separator"
 
-/**
- * Routes that should occupy the full viewport (no sidebar / top bar /
- * mobile bottom nav). Used for immersive writing surfaces.
- */
-const FULLSCREEN_ROUTES = [/^\/journal\/[^/]+\/?$/]
-
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname() ?? ""
-  const fullscreen = FULLSCREEN_ROUTES.some((re) => re.test(pathname))
-
-  if (fullscreen) {
-    return <div className="h-dvh flex flex-col overflow-hidden">{children}</div>
-  }
   return (
     <div className="min-h-dvh flex flex-col md:flex-row">
       {/* desktop sidebar */}
