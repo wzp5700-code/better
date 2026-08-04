@@ -1,6 +1,7 @@
 export * from "./habits"
 export * from "./journal"
 export * from "./auth"
+export * from "./books"
 
 import { relations } from "drizzle-orm"
 import {
@@ -15,6 +16,7 @@ import {
   journalTags,
 } from "./journal"
 import { devices, pairingCodes, pushTokens } from "./auth"
+import { books } from "./books"
 
 export const habitsRelations = relations(habits, ({ many, one }) => ({
   completions: many(habitCompletions),

@@ -36,6 +36,13 @@
       "when": 1785732819220,
       "tag": "0004_slim_ted_forrester",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1785826813070,
+      "tag": "0005_sticky_starbolt",
+      "breakpoints": true
     }
   ]
 }

@@ -12,7 +12,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex md:w-56 md:flex-col md:border-r md:bg-card/40 md:px-4 md:py-6">
         <div className="mb-6 px-2">
           <Link href="/" className="text-base font-semibold tracking-tight">
-            个人成长台
+            王彦昊迭代平台
           </Link>
         </div>
         <PrimaryNav orientation="vertical" />
@@ -28,7 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* mobile top bar */}
       <header className="md:hidden flex items-center justify-between border-b px-4 py-3">
         <Link href="/" className="text-base font-semibold tracking-tight">
-          个人成长台
+          王彦昊迭代平台
         </Link>
         <ThemeToggle />
       </header>

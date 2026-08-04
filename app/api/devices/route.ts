@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 
 import { db } from "@/db/client"
 import { devices } from "@/db/schema"
-import { and, desc, isNull, ne } from "drizzle-orm"
+import { desc, eq, isNull } from "drizzle-orm"
 import { getDeviceContext } from "@/lib/auth/middleware"
 
 export const runtime = "nodejs"
@@ -14,6 +14,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "未授权" }, { status: 401 })
   }
 
+  // Only show connected devices (not revoked). Revoked rows are hard-deleted
+  // on revoke, so this is a defensive filter as well.
   const rows = await db
     .select({
       id: devices.id,
@@ -25,6 +27,7 @@ export async function GET(request: Request) {
       revokedAt: devices.revokedAt,
     })
     .from(devices)
+    .where(isNull(devices.revokedAt))
     .orderBy(desc(devices.createdAt))
 
   return NextResponse.json(rows, {
@@ -68,7 +71,7 @@ export async function DELETE(request: Request) {
     const [target] = await db
       .select({ master: devices.master })
       .from(devices)
-      .where(eqId(id))
+      .where(eq(devices.id, id))
       .limit(1)
     if (!target) {
       return NextResponse.json({ error: "设备不存在" }, { status: 404 })
@@ -81,19 +84,9 @@ export async function DELETE(request: Request) {
     }
   }
 
-  await db
-    .update(devices)
-    .set({ revokedAt: new Date() })
-    .where(and(eqId(id), isNull(devices.revokedAt)))
+  // Hard-delete the device row (FK cascades push_tokens / pairing_codes).
+  // This removes revoked devices entirely so the list only shows connected ones.
+  await db.delete(devices).where(eq(devices.id, id))
 
   return NextResponse.json({ ok: true })
 }
-
-// helpers
-import { eq as _eq } from "drizzle-orm"
-function eqId(id: number) {
-  return _eq(devices.id, id)
-}
-
-// silence "ne" unused import warning during typecheck
-void ne
