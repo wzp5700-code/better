@@ -128,15 +128,9 @@ export default function JournalEntryPage({
         </Button>
       </div>
 
-      {/* 日期（精简显示在分类条下） */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground px-1 md:px-0 shrink-0">
-        <span>{formatDateKey(data.entryDate, "yyyy年M月d日")}</span>
-        {data.moodLabel ? <span>{data.moodLabel}</span> : null}
-      </div>
-
-      {/* 编辑区（点进即可写）— 移动端占满剩余高度 */}
+      {/* 编辑区（点进即可写）— 移动端占满剩余高度，无边框 */}
       <div className="flex-1 min-h-0 overflow-y-auto md:overflow-visible md:flex-none md:min-h-0">
-        <Card className="md:mt-3">
+        <Card className="border-0 shadow-none md:border md:shadow-sm md:mt-3">
           <CardContent className="p-0 md:p-4">
             <JournalEditorLoader
               ref={editorRef}
@@ -147,15 +141,14 @@ export default function JournalEntryPage({
         </Card>
       </div>
 
-      {/* 富文本工具栏 — 移动端固定贴底 */}
-      <div className="shrink-0 md:static pb-[env(safe-area-inset-bottom)]">
-        <EditorToolbar editor={editorRef.current?.getEditor() ?? null} />
-      </div>
-
-      {/* 心情 + 删除 + 反向链接（桌面/次要） */}
-      <div className="hidden md:block">
-        <Card>
-          <CardContent className="space-y-4">
+      {/* 心情滑块（编辑区下方） */}
+      <div className="shrink-0 px-3 md:px-0 md:pt-3 pb-1 md:pb-0">
+        <div className="flex items-center justify-between gap-3 md:block">
+          <span className="text-xs text-muted-foreground md:mb-2 md:block">
+            {formatDateKey(data.entryDate, "yyyy年M月d日")}
+            {data.moodLabel ? ` · ${data.moodLabel}` : ""}
+          </span>
+          <div className="w-44 md:w-full">
             <MoodSlider
               value={draftScore}
               onChange={(score, label) => {
@@ -164,6 +157,19 @@ export default function JournalEntryPage({
                 setDirty(true)
               }}
             />
+          </div>
+        </div>
+      </div>
+
+      {/* 富文本工具栏 — 移动端固定贴底 */}
+      <div className="shrink-0 md:static pb-[env(safe-area-inset-bottom)]">
+        <EditorToolbar editor={editorRef.current?.getEditor() ?? null} />
+      </div>
+
+      {/* 删除 + 反向链接（桌面/次要） */}
+      <div className="hidden md:block">
+        <Card>
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-end">
               <Button
                 variant="ghost"
