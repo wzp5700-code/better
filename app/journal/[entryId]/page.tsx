@@ -99,7 +99,7 @@ export default function JournalEntryPage({
   return (
     <div className="md:space-y-3 flex md:block flex-col h-dvh md:h-auto">
       {/* 顶部条：左 = 返回 / 中 = 分类可点击切换 / 右 = 保存 */}
-      <div className="flex items-center gap-2 shrink-0 px-1 md:px-0">
+      <div className="flex items-center gap-2 shrink-0 px-1 md:px-0 pt-[env(safe-area-inset-top)]">
         <Button variant="ghost" size="icon" asChild aria-label="返回">
           <Link href="/journal">
             <ChevronLeft className="h-5 w-5" />
@@ -148,7 +148,7 @@ export default function JournalEntryPage({
       </div>
 
       {/* 富文本工具栏 — 移动端固定贴底 */}
-      <div className="shrink-0 md:static">
+      <div className="shrink-0 md:static pb-[env(safe-area-inset-bottom)]">
         <EditorToolbar editor={editorRef.current?.getEditor() ?? null} />
       </div>
 

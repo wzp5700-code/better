@@ -85,12 +85,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* content — mobile write routes get no padding (fullscreen) */}
-      <main className="flex-1 min-w-0">
+      {/* content — mobile write routes get no padding + fixed viewport height (fullscreen) */}
+      <main
+        className={cn(
+          "flex-1 min-w-0",
+          isWrite && "md:flex-none"
+        )}
+      >
         <div
           className={cn(
             "mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-10",
-            isWrite && "px-0 py-0 md:px-8 md:py-10"
+            isWrite &&
+              "px-0 py-0 h-dvh overflow-hidden md:h-auto md:px-8 md:py-10"
           )}
         >
           {children}
