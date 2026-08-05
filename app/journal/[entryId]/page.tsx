@@ -59,7 +59,10 @@ export default function JournalEntryPage({
   const onSave = async () => {
     if (!data) return
     const handle = editorRef.current
-    if (!handle) return
+    if (!handle) {
+      toast.error("编辑器未就绪，请稍后再试")
+      return
+    }
     if (handle.isEmpty()) {
       toast.error("内容不能为空")
       return
@@ -76,6 +79,18 @@ export default function JournalEntryPage({
       toast.success("已保存")
       setDirty(false)
       router.refresh()
+    } else {
+      toast.error(res.error)
+    }
+  }
+
+  const onDelete = async () => {
+    if (!data) return
+    if (!window.confirm("删除这篇日记？")) return
+    const res = await del.mutateAsync(data.id)
+    if (res.ok) {
+      toast.success("已删除")
+      router.push("/journal")
     } else {
       toast.error(res.error)
     }
@@ -118,6 +133,16 @@ export default function JournalEntryPage({
         </div>
 
         <Button
+          variant="ghost"
+          size="icon"
+          onClick={onDelete}
+          disabled={del.isPending}
+          aria-label="删除"
+        >
+          <Trash2 className="h-5 w-5 text-muted-foreground" />
+        </Button>
+
+        <Button
           variant={dirty ? "default" : "ghost"}
           size="icon"
           onClick={onSave}
@@ -151,32 +176,9 @@ export default function JournalEntryPage({
         <EditorToolbar editor={toolbarEditor} />
       </div>
 
-      {/* 删除 + 反向链接（桌面/次要） */}
+      {/* 反向链接（桌面/次要） */}
       <div className="hidden md:block">
-        <Card>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-                onClick={async () => {
-                  if (!window.confirm("删除这篇日记？")) return
-                  const res = await del.mutateAsync(data.id)
-                  if (res.ok) {
-                    toast.success("已删除")
-                    router.push("/journal")
-                  } else {
-                    toast.error(res.error)
-                  }
-                }}
-              >
-                <Trash2 className="h-4 w-4" /> 删除
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        <div className="mt-3">
+        <div>
           <BacklinksPanel links={data.incomingLinks ?? []} />
         </div>
       </div>
