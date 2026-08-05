@@ -43,6 +43,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/db ./db
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.pnpm ./node_modules/.pnpm
+# Backup script (runs via `node backup.js <dest>` inside the container)
+COPY --from=builder --chown=nextjs:nodejs /app/docker/backup.js ./backup.js
 
 # Data directory for SQLite
 RUN mkdir -p /app/data /backups && chown -R nextjs:nodejs /app/data /backups
