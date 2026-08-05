@@ -1,12 +1,26 @@
+"use client"
+
 import * as React from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Settings, CalendarRange } from "lucide-react"
 
 import { PrimaryNav } from "@/components/layout/primary-nav"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
+
+/**
+ * Routes that on mobile should feel fullscreen (hide top bar + bottom nav,
+ * remove content padding) for an immersive writing surface. Desktop keeps
+ * the sidebar regardless.
+ */
+const WRITE_ROUTES = [/^\/journal\/[^/]+\/?$/]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() ?? ""
+  const isWrite = WRITE_ROUTES.some((re) => re.test(pathname))
+
   return (
     <div className="min-h-dvh flex flex-col md:flex-row">
       {/* desktop sidebar */}
@@ -42,8 +56,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* mobile top bar */}
-      <header className="md:hidden flex items-center justify-between border-b px-4 py-3">
+      {/* mobile top bar — hidden on write routes (fullscreen) */}
+      <header
+        className={cn(
+          "md:hidden flex items-center justify-between border-b px-4 py-3",
+          isWrite && "hidden"
+        )}
+      >
         <Link href="/" className="text-base font-semibold tracking-tight">
           王彦昊迭代平台
         </Link>
@@ -66,16 +85,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      {/* content — mobile write routes get no padding (fullscreen) */}
       <main className="flex-1 min-w-0">
-        <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-10">
+        <div
+          className={cn(
+            "mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-10",
+            isWrite && "px-0 py-0 md:px-8 md:py-10"
+          )}
+        >
           {children}
         </div>
       </main>
 
-      {/* mobile bottom nav */}
+      {/* mobile bottom nav — hidden on write routes (fullscreen) */}
       <nav
         aria-label="主导航（移动端）"
-        className="md:hidden sticky bottom-0 z-10 flex border-t bg-background/95 backdrop-blur"
+        className={cn(
+          "md:hidden sticky bottom-0 z-10 flex border-t bg-background/95 backdrop-blur",
+          isWrite && "hidden"
+        )}
       >
         <div className="mx-auto flex w-full max-w-md items-center justify-around py-2">
           <PrimaryNav orientation="horizontal" />
