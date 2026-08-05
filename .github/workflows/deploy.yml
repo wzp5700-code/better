@@ -1,8 +1,8 @@
 name: deploy
 
+# Auto-deploy on push is DISABLED — the manual docker run flow is authoritative.
+# To deploy from GitHub manually: Actions → deploy → Run workflow.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
