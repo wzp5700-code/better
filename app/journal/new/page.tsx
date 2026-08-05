@@ -4,16 +4,19 @@ import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { Save } from "lucide-react"
+import { ChevronLeft, Save } from "lucide-react"
+import type { Editor } from "@tiptap/react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { JournalEditorLoader, type JournalEditorHandle } from "@/components/journal/editor/journal-editor-loader"
-import { CategorySelector } from "@/components/journal/category-selector"
-import { MoodSlider } from "@/components/journal/mood-slider"
+import {
+  JournalEditorLoader,
+  type JournalEditorHandle,
+} from "@/components/journal/editor/journal-editor-loader"
+import { EditorToolbar } from "@/components/journal/editor/editor-toolbar"
+import { CategoryPicker } from "@/components/journal/category-picker-popover"
 import { useCreateJournalMutation } from "@/lib/queries/journal"
-import { formatDateKey, isValidDateKey, todayDateKey } from "@/lib/dates"
+import { isValidDateKey, todayDateKey } from "@/lib/dates"
+import { LoadingBlock } from "@/components/shared/loading-block"
 
 function NewJournalInner() {
   const router = useRouter()
@@ -25,9 +28,9 @@ function NewJournalInner() {
       : todayDateKey()
 
   const editorRef = React.useRef<JournalEditorHandle>(null)
-  const [moodScore, setMoodScore] = React.useState<number | null>(null)
-  const [moodLabel, setMoodLabel] = React.useState<string | null>(null)
+  const [toolbarEditor, setToolbarEditor] = React.useState<Editor | null>(null)
   const [categoryId, setCategoryId] = React.useState<number | null>(null)
+  const [dirty, setDirty] = React.useState(false)
   const create = useCreateJournalMutation()
 
   const onSave = async () => {
@@ -40,8 +43,8 @@ function NewJournalInner() {
     const res = await create.mutateAsync({
       entryDate,
       content: json as never,
-      moodScore,
-      moodLabel: moodLabel as never,
+      moodScore: null,
+      moodLabel: null,
       categoryId,
     })
     if (res.ok) {
@@ -53,77 +56,58 @@ function NewJournalInner() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">写日记</h1>
-          <p className="text-sm text-muted-foreground">
-            {formatDateKey(entryDate, "yyyy年M月d日")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
-            <Link href="/journal">取消</Link>
-          </Button>
-          <Button onClick={onSave} disabled={create.isPending}>
-            <Save className="h-4 w-4" />
-            {create.isPending ? "保存中…" : "保存"}
-          </Button>
-        </div>
-      </div>
+    <div className="flex flex-col h-dvh md:h-auto">
+      {/* 顶部条：左 = 返回 / 中 = 分类（可新增+选择）/ 右 = 保存 */}
+      <div className="flex items-center gap-2 shrink-0 px-1 pt-[env(safe-area-inset-top)]">
+        <Button variant="ghost" size="icon" asChild aria-label="返回">
+          <Link href="/journal">
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+        </Button>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">正文</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <JournalEditorLoader
-            ref={editorRef}
-            initialContent={{ type: "doc", content: [{ type: "paragraph" }] }}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">分类与心情</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="entry-category">分类</Label>
-              <Link
-                href="/categories"
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                管理分类
-              </Link>
-            </div>
-            <CategorySelector value={categoryId} onChange={setCategoryId} />
-          </div>
-          <MoodSlider
-            value={moodScore}
-            onChange={(score, label) => {
-              setMoodScore(score)
-              setMoodLabel(label)
+        <div className="flex-1 flex justify-center">
+          <CategoryPicker
+            value={categoryId}
+            onChange={(id) => {
+              setCategoryId(id)
+              setDirty(true)
             }}
           />
-        </CardContent>
-      </Card>
+        </div>
+
+        <Button
+          variant={dirty ? "default" : "ghost"}
+          size="sm"
+          onClick={onSave}
+          disabled={create.isPending}
+          aria-label="保存"
+        >
+          <Save className="h-5 w-5" />
+          {create.isPending ? "保存中" : "保存"}
+        </Button>
+      </div>
+
+      {/* 编辑区 — 无边框占满 */}
+      <div className="flex-1 min-h-0 overflow-y-auto md:flex-none">
+        <JournalEditorLoader
+          ref={editorRef}
+          initialContent={{ type: "doc", content: [{ type: "paragraph" }] }}
+          onUpdate={() => setDirty(true)}
+          onReady={setToolbarEditor}
+        />
+      </div>
+
+      {/* 工具栏 — 贴底 */}
+      <div className="shrink-0 pb-[env(safe-area-inset-bottom)]">
+        <EditorToolbar editor={toolbarEditor} />
+      </div>
     </div>
   )
 }
 
 export default function NewJournalPage() {
   return (
-    <React.Suspense
-      fallback={
-        <div className="space-y-6">
-          <h1 className="text-2xl font-semibold tracking-tight">写日记</h1>
-          <p className="text-sm text-muted-foreground">加载中…</p>
-        </div>
-      }
-    >
+    <React.Suspense fallback={<LoadingBlock lines={4} />}>
       <NewJournalInner />
     </React.Suspense>
   )

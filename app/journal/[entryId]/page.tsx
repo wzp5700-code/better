@@ -14,8 +14,8 @@ import {
 } from "@/components/journal/editor/journal-editor-loader"
 import { EditorToolbar } from "@/components/journal/editor/editor-toolbar"
 import { CategoryPicker } from "@/components/journal/category-picker-popover"
-import { MoodSlider } from "@/components/journal/mood-slider"
 import { BacklinksPanel } from "@/components/journal/backlinks-panel"
+import type { Editor } from "@tiptap/react"
 import {
   useDeleteJournalMutation,
   useJournalEntryQuery,
@@ -38,7 +38,9 @@ export default function JournalEntryPage({
 
   // 一进入页面就进入"可写"状态，无需按"编辑"按钮
   const editorRef = React.useRef<JournalEditorHandle>(null)
+  const [toolbarEditor, setToolbarEditor] = React.useState<Editor | null>(null)
 
+  // 心情值只读保留（页面不再显示滑块），保存时原样传回，避免覆盖已有数据
   const [draftScore, setDraftScore] = React.useState<number | null>(null)
   const [draftLabel, setDraftLabel] = React.useState<string | null>(null)
   const [draftCategoryId, setDraftCategoryId] = React.useState<number | null>(null)
@@ -135,26 +137,15 @@ export default function JournalEntryPage({
               ref={editorRef}
               initialContent={safeParseJson(data.content)}
               onUpdate={() => setDirty(true)}
+              onReady={setToolbarEditor}
             />
           </CardContent>
         </Card>
       </div>
 
-      {/* 心情滑块（编辑区下方）— 纯滑块，无日期 */}
-      <div className="shrink-0 px-3 md:px-0 md:pt-3 pb-1 md:pb-0">
-        <MoodSlider
-          value={draftScore}
-          onChange={(score, label) => {
-            setDraftScore(score)
-            setDraftLabel(label)
-            setDirty(true)
-          }}
-        />
-      </div>
-
       {/* 富文本工具栏 — 移动端固定贴底 */}
       <div className="shrink-0 md:static pb-[env(safe-area-inset-bottom)]">
-        <EditorToolbar editor={editorRef.current?.getEditor() ?? null} />
+        <EditorToolbar editor={toolbarEditor} />
       </div>
 
       {/* 删除 + 反向链接（桌面/次要） */}

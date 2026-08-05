@@ -2,11 +2,19 @@
 
 import * as React from "react"
 import type { Editor } from "@tiptap/react"
-import { Bold, Italic, Code, Heading2, List, Quote } from "lucide-react"
+import { Bold, Italic, Underline } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
-/** 独立工具栏组件 — 由父页面放在编辑卡下方。 */
+const FONT_SIZES = [
+  { label: "默认", value: "" },
+  { label: "小", value: "14px" },
+  { label: "正常", value: "16px" },
+  { label: "大", value: "18px" },
+  { label: "特大", value: "22px" },
+]
+
+/** 独立工具栏组件 — 由父页面放在编辑区下方，移动端贴底通栏，桌面端悬浮。 */
 export function EditorToolbar({ editor }: { editor: Editor | null }) {
   if (!editor) return null
   const btn = (
@@ -27,6 +35,10 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
       <Icon className="h-4 w-4" />
     </Button>
   )
+
+  const currentFont =
+    (editor.getAttributes("textStyle").fontSize as string | undefined) ?? ""
+
   return (
     <div
       role="toolbar"
@@ -46,30 +58,31 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
         () => editor.chain().focus().toggleItalic().run()
       )}
       {btn(
-        "行内代码",
-        Code,
-        editor.isActive("code"),
-        () => editor.chain().focus().toggleCode().run()
+        "下划线",
+        Underline,
+        editor.isActive("underline"),
+        () => editor.chain().focus().toggleUnderline().run()
       )}
       <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-      {btn(
-        "二级标题",
-        Heading2,
-        editor.isActive("heading", { level: 2 }),
-        () => editor.chain().focus().toggleHeading({ level: 2 }).run()
-      )}
-      {btn(
-        "无序列表",
-        List,
-        editor.isActive("bulletList"),
-        () => editor.chain().focus().toggleBulletList().run()
-      )}
-      {btn(
-        "引用",
-        Quote,
-        editor.isActive("blockquote"),
-        () => editor.chain().focus().toggleBlockquote().run()
-      )}
+      <label className="flex items-center gap-1 text-xs text-muted-foreground">
+        字号
+        <select
+          value={currentFont}
+          onChange={(e) => {
+            const v = e.target.value
+            if (v) editor.chain().focus().setFontSize(v).run()
+            else editor.chain().focus().unsetFontSize().run()
+          }}
+          className="h-8 rounded-md border bg-transparent px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          aria-label="字体大小"
+        >
+          {FONT_SIZES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   )
 }

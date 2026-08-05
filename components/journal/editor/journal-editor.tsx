@@ -6,6 +6,8 @@ import { EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import Link from "@tiptap/extension-link"
+import Underline from "@tiptap/extension-underline"
+import { TextStyle, FontSize } from "@tiptap/extension-text-style"
 
 import { WikiLinkExtension } from "../extensions/wiki-link-extension"
 import { TagExtension } from "../extensions/tag-extension"
@@ -23,8 +25,9 @@ export const JournalEditor = React.forwardRef<
     initialContent: unknown
     placeholder?: string
     onUpdate?: () => void
+    onReady?: (editor: Editor) => void
   }
->(function JournalEditor({ initialContent, placeholder, onUpdate }, ref) {
+>(function JournalEditor({ initialContent, placeholder, onUpdate, onReady }, ref) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -42,9 +45,13 @@ export const JournalEditor = React.forwardRef<
       }),
       WikiLinkExtension,
       TagExtension,
+      Underline,
+      TextStyle,
+      FontSize,
     ],
     content: initialContent ?? { type: "doc", content: [{ type: "paragraph" }] },
     immediatelyRender: false,
+    onCreate: ({ editor }) => onReady?.(editor),
     onUpdate: () => onUpdate?.(),
     editorProps: {
       attributes: {

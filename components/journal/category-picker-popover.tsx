@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { toast } from "sonner"
 import { Check, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useCategoriesQuery, type CategoryWithCount } from "@/lib/queries/journal-categories"
+import { createCategoryAction } from "@/lib/actions/journal-category-actions"
 import { cn } from "@/lib/utils"
 
 interface Category {
@@ -30,13 +32,34 @@ export function CategoryPicker({
 }) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
-  const { data, isLoading } = useCategoriesQuery(false)
+  const [newName, setNewName] = React.useState("")
+  const [creating, setCreating] = React.useState(false)
+  const { data, isLoading, refetch } = useCategoriesQuery(false)
   const items = data ?? []
   const current = value != null ? items.find((c: CategoryWithCount) => c.id === value) : null
 
   const filtered = items.filter((c: CategoryWithCount) =>
     c.name.toLowerCase().includes(query.toLowerCase())
   )
+
+  const handleCreate = async () => {
+    const name = newName.trim()
+    if (!name || creating) return
+    setCreating(true)
+    try {
+      const res = await createCategoryAction({ name, color: null })
+      if (res.ok) {
+        onChange(res.data.id)
+        setNewName("")
+        setOpen(false)
+        refetch()
+      } else {
+        toast.error(res.error)
+      }
+    } finally {
+      setCreating(false)
+    }
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -132,6 +155,26 @@ export function CategoryPicker({
               清除分类
             </button>
           </div>
+        </div>
+        <div className="border-t p-2 flex gap-2">
+          <Input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCreate()
+            }}
+            placeholder="新增分类名"
+            className="h-8"
+            aria-label="新增分类名"
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleCreate}
+            disabled={creating || !newName.trim()}
+          >
+            {creating ? "…" : "新增"}
+          </Button>
         </div>
         <div className="border-t p-1">
           <Link
