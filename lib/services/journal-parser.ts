@@ -166,7 +166,7 @@ function renderInline(node: TipTapNode): string {
   return ""
 }
 
-function renderNode(node: TipTapNode, ctx: "body" | "list" | "listItem" | "blockquote" | "code"): string {
+export function renderNode(node: TipTapNode, ctx: "body" | "list" | "listItem" | "blockquote" | "code"): string {
   if (!node || !node.type) return ""
   if (!ALLOWED_NODE_TYPES.has(node.type) && !["wikiLink", "journalTag"].includes(node.type)) {
     return ""
