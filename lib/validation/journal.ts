@@ -21,7 +21,8 @@ export const createJournalInput = z
       .number()
       .int()
       .refine(isValidDateKey, { message: "日期非法" }),
-    content: z.string().max(50_000),
+    // TipTap JSON document (object). Service validates shape via isValidTipTapDoc.
+    content: z.any(),
     moodScore,
     moodLabel,
     categoryId: z.number().int().positive().nullable().optional(),
@@ -55,7 +56,7 @@ export const updateJournalInput = z.object({
     .int()
     .refine(isValidDateKey, { message: "日期非法" })
     .optional(),
-  content: z.string().max(50_000).optional(),
+  content: z.any().optional(),
   moodScore,
   moodLabel,
   categoryId: z.number().int().positive().nullable().optional(),
