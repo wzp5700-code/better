@@ -78,7 +78,7 @@ export function useJournalEntryQuery(id: number) {
   return useQuery({
     queryKey: journalKeys.detail(id),
     queryFn: async () => {
-      const r = await fetch(`/api/journal/${id}`, { cache: "no-store" })
+      const r = await apiFetch(`/api/journal/${id}`, { cache: "no-store" })
       if (r.status === 404) return null
       if (!r.ok) throw new Error(`fetch journal: ${r.status}`)
       return r.json()
