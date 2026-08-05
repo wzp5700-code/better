@@ -65,14 +65,12 @@ export const JournalEditor = React.forwardRef<
 
   if (!editor) {
     return (
-      <div className="rounded-md border bg-card">
-        <div className="px-4 py-6 text-sm text-muted-foreground">编辑器加载中…</div>
-      </div>
+      <div className="px-4 py-6 text-sm text-muted-foreground">编辑器加载中…</div>
     )
   }
 
   return (
-    <div className="rounded-md border bg-card">
+    <div>
       <EditorContent editor={editor} />
     </div>
   )

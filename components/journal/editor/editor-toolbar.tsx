@@ -5,7 +5,6 @@ import type { Editor } from "@tiptap/react"
 import { Bold, Italic, Code, Heading2, List, Quote } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 /** 独立工具栏组件 — 由父页面放在编辑卡下方。 */
 export function EditorToolbar({ editor }: { editor: Editor | null }) {
@@ -32,7 +31,7 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
     <div
       role="toolbar"
       aria-label="格式"
-      className="flex items-center gap-1 rounded-md border bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur md:sticky md:bottom-3 md:mt-3 z-10"
+      className="flex items-center gap-1 border-t bg-card/95 px-2 py-1.5 backdrop-blur md:rounded-md md:border md:border-t md:shadow-sm md:sticky md:bottom-3 md:mt-3 z-10"
     >
       {btn(
         "加粗",
@@ -71,12 +70,6 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
         editor.isActive("blockquote"),
         () => editor.chain().focus().toggleBlockquote().run()
       )}
-      <div className="ml-auto pr-1 text-xs text-muted-foreground">
-        输入 <kbd className={cn("rounded border px-1 font-mono text-[10px]")}>[[</kbd>{" "}
-        插入引用 · 输入{" "}
-        <kbd className={cn("rounded border px-1 font-mono text-[10px]")}>#</kbd>{" "}
-        添加标签
-      </div>
     </div>
   )
 }
