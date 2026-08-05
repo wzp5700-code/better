@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { ChevronLeft, Save, Trash2 } from "lucide-react"
+import { ChevronLeft, Loader2, Save, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -119,13 +119,16 @@ export default function JournalEntryPage({
 
         <Button
           variant={dirty ? "default" : "ghost"}
-          size="sm"
+          size="icon"
           onClick={onSave}
           disabled={update.isPending}
           aria-label="保存"
         >
-          <Save className="h-5 w-5" />
-          {update.isPending ? "保存中" : "保存"}
+          {update.isPending ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Save className="h-5 w-5" />
+          )}
         </Button>
       </div>
 

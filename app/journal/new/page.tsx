@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { ChevronLeft, Save } from "lucide-react"
+import { ChevronLeft, Loader2, Save } from "lucide-react"
 import type { Editor } from "@tiptap/react"
 
 import { Button } from "@/components/ui/button"
@@ -77,13 +77,16 @@ function NewJournalInner() {
 
         <Button
           variant={dirty ? "default" : "ghost"}
-          size="sm"
+          size="icon"
           onClick={onSave}
           disabled={create.isPending}
           aria-label="保存"
         >
-          <Save className="h-5 w-5" />
-          {create.isPending ? "保存中" : "保存"}
+          {create.isPending ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Save className="h-5 w-5" />
+          )}
         </Button>
       </div>
 

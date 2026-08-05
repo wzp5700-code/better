@@ -43,7 +43,7 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
     <div
       role="toolbar"
       aria-label="格式"
-      className="flex items-center gap-1 border-t bg-card/95 px-2 py-1.5 backdrop-blur md:rounded-md md:border md:border-t md:shadow-sm md:sticky md:bottom-3 md:mt-3 z-10"
+      className="flex items-center justify-center gap-6 border-t bg-card/95 px-2 py-2.5 backdrop-blur md:rounded-md md:border md:border-t md:shadow-sm md:sticky md:bottom-3 md:mt-3 z-10"
     >
       {btn(
         "加粗",
@@ -63,8 +63,8 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
         editor.isActive("underline"),
         () => editor.chain().focus().toggleUnderline().run()
       )}
-      <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-      <label className="flex items-center gap-1 text-xs text-muted-foreground">
+      <span className="mx-2 h-5 w-px bg-border" aria-hidden />
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
         字号
         <select
           value={currentFont}
