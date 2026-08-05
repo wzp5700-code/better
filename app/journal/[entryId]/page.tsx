@@ -97,9 +97,9 @@ export default function JournalEntryPage({
     )
 
   return (
-    <div className="space-y-3">
+    <div className="md:space-y-3 flex md:block flex-col h-dvh md:h-auto">
       {/* 顶部条：左 = 返回 / 中 = 分类可点击切换 / 右 = 保存 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0 px-1 md:px-0">
         <Button variant="ghost" size="icon" asChild aria-label="返回">
           <Link href="/journal">
             <ChevronLeft className="h-5 w-5" />
@@ -118,70 +118,77 @@ export default function JournalEntryPage({
 
         <Button
           variant={dirty ? "default" : "ghost"}
-          size="icon"
+          size="sm"
           onClick={onSave}
           disabled={update.isPending}
           aria-label="保存"
         >
           <Save className="h-5 w-5" />
+          {update.isPending ? "保存中" : "保存"}
         </Button>
       </div>
 
-      {/* 日期 + 心情（精简显示在分类条下） */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+      {/* 日期（精简显示在分类条下） */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground px-1 md:px-0 shrink-0">
         <span>{formatDateKey(data.entryDate, "yyyy年M月d日")}</span>
         {data.moodLabel ? <span>{data.moodLabel}</span> : null}
       </div>
 
-      {/* 编辑区（点进即可写） */}
-      <Card>
-        <CardContent className="p-0">
-          <JournalEditorLoader
-            ref={editorRef}
-            initialContent={safeParseJson(data.content)}
-            onUpdate={() => setDirty(true)}
-          />
-        </CardContent>
-      </Card>
+      {/* 编辑区（点进即可写）— 移动端占满剩余高度 */}
+      <div className="flex-1 min-h-0 overflow-y-auto md:overflow-visible md:flex-none md:min-h-0">
+        <Card className="md:mt-3">
+          <CardContent className="p-0 md:p-4">
+            <JournalEditorLoader
+              ref={editorRef}
+              initialContent={safeParseJson(data.content)}
+              onUpdate={() => setDirty(true)}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* 富文本工具栏（紧贴编辑卡下方，sticky 悬浮在屏幕底部） */}
-      <EditorToolbar editor={editorRef.current?.getEditor() ?? null} />
+      {/* 富文本工具栏 — 移动端固定贴底 */}
+      <div className="shrink-0 md:static">
+        <EditorToolbar editor={editorRef.current?.getEditor() ?? null} />
+      </div>
 
-      {/* 心情 + 删除（次要操作） */}
-      <Card>
-        <CardContent className="space-y-4">
-          <MoodSlider
-            value={draftScore}
-            onChange={(score, label) => {
-              setDraftScore(score)
-              setDraftLabel(label)
-              setDirty(true)
-            }}
-          />
-          <div className="flex items-center justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              onClick={async () => {
-                if (!window.confirm("删除这篇日记？")) return
-                const res = await del.mutateAsync(data.id)
-                if (res.ok) {
-                  toast.success("已删除")
-                  router.push("/journal")
-                } else {
-                  toast.error(res.error)
-                }
+      {/* 心情 + 删除 + 反向链接（桌面/次要） */}
+      <div className="hidden md:block">
+        <Card>
+          <CardContent className="space-y-4">
+            <MoodSlider
+              value={draftScore}
+              onChange={(score, label) => {
+                setDraftScore(score)
+                setDraftLabel(label)
+                setDirty(true)
               }}
-            >
-              <Trash2 className="h-4 w-4" /> 删除
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 反向链接（折叠到次要位置） */}
-      <BacklinksPanel links={data.incomingLinks ?? []} />
+            />
+            <div className="flex items-center justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={async () => {
+                  if (!window.confirm("删除这篇日记？")) return
+                  const res = await del.mutateAsync(data.id)
+                  if (res.ok) {
+                    toast.success("已删除")
+                    router.push("/journal")
+                  } else {
+                    toast.error(res.error)
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" /> 删除
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        <div className="mt-3">
+          <BacklinksPanel links={data.incomingLinks ?? []} />
+        </div>
+      </div>
     </div>
   )
 }

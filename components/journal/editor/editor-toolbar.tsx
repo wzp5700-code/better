@@ -32,7 +32,7 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
     <div
       role="toolbar"
       aria-label="格式"
-      className="sticky bottom-3 z-10 mt-3 flex items-center gap-1 rounded-md border bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur"
+      className="flex items-center gap-1 rounded-md border bg-card/95 px-2 py-1.5 shadow-sm backdrop-blur md:sticky md:bottom-3 md:mt-3 z-10"
     >
       {btn(
         "加粗",
