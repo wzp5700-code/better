@@ -21,7 +21,6 @@ import {
   useJournalEntryQuery,
   useUpdateJournalMutation,
 } from "@/lib/queries/journal"
-import { formatDateKey } from "@/lib/dates"
 import { LoadingBlock } from "@/components/shared/loading-block"
 import { EmptyState } from "@/components/shared/empty-state"
 
@@ -141,24 +140,16 @@ export default function JournalEntryPage({
         </Card>
       </div>
 
-      {/* 心情滑块（编辑区下方） */}
+      {/* 心情滑块（编辑区下方）— 纯滑块，无日期 */}
       <div className="shrink-0 px-3 md:px-0 md:pt-3 pb-1 md:pb-0">
-        <div className="flex items-center justify-between gap-3 md:block">
-          <span className="text-xs text-muted-foreground md:mb-2 md:block">
-            {formatDateKey(data.entryDate, "yyyy年M月d日")}
-            {data.moodLabel ? ` · ${data.moodLabel}` : ""}
-          </span>
-          <div className="w-44 md:w-full">
-            <MoodSlider
-              value={draftScore}
-              onChange={(score, label) => {
-                setDraftScore(score)
-                setDraftLabel(label)
-                setDirty(true)
-              }}
-            />
-          </div>
-        </div>
+        <MoodSlider
+          value={draftScore}
+          onChange={(score, label) => {
+            setDraftScore(score)
+            setDraftLabel(label)
+            setDirty(true)
+          }}
+        />
       </div>
 
       {/* 富文本工具栏 — 移动端固定贴底 */}
