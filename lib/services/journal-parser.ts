@@ -112,6 +112,10 @@ export function extractWikiLinks(doc: unknown): ParsedWikiLink[] {
 /**
  * Serialize a TipTap doc to safe HTML. We do NOT trust client input — only
  * the JSON is the source of truth, and this renders a minimal subset.
+ *
+ * Implemented as a single recursive function (no mutually-recursive helpers)
+ * so bundlers cannot break initialization order (TDZ) — that caused
+ * "renderNode is not defined" at runtime.
  */
 export function renderJournalHtml(doc: unknown): string {
   if (!doc || typeof doc !== "object") return ""
@@ -130,8 +134,7 @@ function escapeAttr(s: string): string {
   return escapeText(s)
 }
 
-function renderInline(node: TipTapNode): string {
-  if (!node) return ""
+function renderInlineText(node: TipTapNode): string {
   if (node.type === "text") {
     let html = escapeText(node.text ?? "")
     if (Array.isArray(node.marks)) {
@@ -161,27 +164,25 @@ function renderInline(node: TipTapNode): string {
     return `<a href="/journal?tag=${encodeURIComponent(tag)}" data-journal-tag data-tag="${tag}">#${escapeText(tag)}</a>`
   }
   if (Array.isArray(node.content)) {
-    return node.content.map(renderInline).join("")
+    return node.content.map(renderInlineText).join("")
   }
   return ""
 }
 
-export function renderNode(node: TipTapNode, ctx: "body" | "list" | "listItem" | "blockquote" | "code"): string {
+function renderNode(node: TipTapNode, ctx: "body" | "list" | "listItem" | "blockquote" | "code"): string {
   if (!node || !node.type) return ""
   if (!ALLOWED_NODE_TYPES.has(node.type) && !["wikiLink", "journalTag"].includes(node.type)) {
     return ""
   }
-  const inner = (n: TipTapNode) => renderNode(n, "body")
-  const inline = (n: TipTapNode) => renderInline(n)
 
   switch (node.type) {
     case "doc":
       return (node.content ?? []).map((c) => renderNode(c, "body")).join("")
     case "paragraph":
-      return `<p>${(node.content ?? []).map(inline).join("")}</p>`
+      return `<p>${(node.content ?? []).map(renderInlineText).join("")}</p>`
     case "heading": {
       const level = Math.min(6, Math.max(1, Number(node.attrs?.level ?? 1)))
-      return `<h${level}>${(node.content ?? []).map(inline).join("")}</h${level}>`
+      return `<h${level}>${(node.content ?? []).map(renderInlineText).join("")}</h${level}>`
     }
     case "blockquote":
       return `<blockquote>${(node.content ?? []).map((c) => renderNode(c, "blockquote")).join("")}</blockquote>`
@@ -196,9 +197,8 @@ export function renderNode(node: TipTapNode, ctx: "body" | "list" | "listItem" |
     case "hardBreak":
       return "<br />"
     default:
-      if (ctx === "listItem" || ctx === "list") return inline(node)
-      if (ctx === "blockquote") return `<p>${inline(node)}</p>`
-      return inline(node)
+      // inline nodes (wikiLink / journalTag / text) render inline
+      return renderInlineText(node)
   }
 }
 
