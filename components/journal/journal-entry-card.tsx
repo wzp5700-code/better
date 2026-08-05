@@ -1,8 +1,10 @@
 "use client"
 
 import Link from "next/link"
+import { Pencil } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { formatDateKey, todayDateKey } from "@/lib/dates"
 
@@ -84,6 +86,14 @@ export function JournalEntryCard({ entry }: { entry: Entry }) {
             ))}
           </div>
         ) : null}
+        <div className="flex justify-end">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/journal/${entry.id}`} className="gap-1.5 text-muted-foreground">
+              <Pencil className="h-4 w-4" />
+              编辑
+            </Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
