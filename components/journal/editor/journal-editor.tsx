@@ -89,7 +89,7 @@ export const JournalEditor = React.forwardRef<
     <div className="relative">
       <EditorContent editor={editor} />
       <div
-        className="pointer-events-none sticky bottom-1 float-right mr-3 mt-[-1.5rem] rounded bg-card/80 px-2 py-0.5 text-[11px] tabular-nums text-muted-foreground backdrop-blur"
+        className="pointer-events-none absolute right-2 bottom-1 select-none rounded bg-card/70 px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground"
         aria-live="polite"
         aria-label="已写字数"
       >
