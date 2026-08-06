@@ -29,7 +29,6 @@ export const JournalEditor = React.forwardRef<
     onReady?: (editor: Editor) => void
   }
 >(function JournalEditor({ initialContent, placeholder, onUpdate, onReady }, ref) {
-  const [chars, setChars] = React.useState(0)
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -50,18 +49,13 @@ export const JournalEditor = React.forwardRef<
       Underline,
       TextStyle,
       FontSize,
+      // Word count is read by EditorToolbar (next to font-size selector).
       CharacterCount.configure({ limit: null }),
     ],
     content: initialContent ?? { type: "doc", content: [{ type: "paragraph" }] },
     immediatelyRender: false,
-    onCreate: ({ editor }) => {
-      setChars(editor.storage.characterCount?.characters() ?? 0)
-      onReady?.(editor)
-    },
-    onUpdate: ({ editor }) => {
-      setChars(editor.storage.characterCount?.characters() ?? 0)
-      onUpdate?.()
-    },
+    onCreate: ({ editor }) => onReady?.(editor),
+    onUpdate: () => onUpdate?.(),
     editorProps: {
       attributes: {
         class:
@@ -86,15 +80,8 @@ export const JournalEditor = React.forwardRef<
   }
 
   return (
-    <div className="relative">
+    <div>
       <EditorContent editor={editor} />
-      <div
-        className="pointer-events-none absolute right-2 bottom-1 select-none rounded bg-card/70 px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground"
-        aria-live="polite"
-        aria-label="已写字数"
-      >
-        {chars} 字
-      </div>
     </div>
   )
 })

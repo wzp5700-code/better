@@ -16,6 +16,20 @@ const FONT_SIZES = [
 
 /** 独立工具栏组件 — 由父页面放在编辑区下方，移动端贴底通栏，桌面端悬浮。 */
 export function EditorToolbar({ editor }: { editor: Editor | null }) {
+  const [chars, setChars] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!editor) return
+    setChars(editor.storage.characterCount?.characters() ?? 0)
+    const onUpdate = () => {
+      setChars(editor.storage.characterCount?.characters() ?? 0)
+    }
+    editor.on("update", onUpdate)
+    return () => {
+      editor.off("update", onUpdate)
+    }
+  }, [editor])
+
   if (!editor) return null
   const btn = (
     label: string,
@@ -83,6 +97,13 @@ export function EditorToolbar({ editor }: { editor: Editor | null }) {
           ))}
         </select>
       </label>
+      <span
+        className="tabular-nums text-xs text-muted-foreground"
+        aria-live="polite"
+        aria-label="已写字数"
+      >
+        {chars} 字
+      </span>
     </div>
   )
 }
