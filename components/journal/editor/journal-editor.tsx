@@ -8,6 +8,7 @@ import Placeholder from "@tiptap/extension-placeholder"
 import Link from "@tiptap/extension-link"
 import Underline from "@tiptap/extension-underline"
 import { TextStyle, FontSize } from "@tiptap/extension-text-style"
+import CharacterCount from "@tiptap/extension-character-count"
 
 import { WikiLinkExtension } from "../extensions/wiki-link-extension"
 import { TagExtension } from "../extensions/tag-extension"
@@ -28,6 +29,7 @@ export const JournalEditor = React.forwardRef<
     onReady?: (editor: Editor) => void
   }
 >(function JournalEditor({ initialContent, placeholder, onUpdate, onReady }, ref) {
+  const [chars, setChars] = React.useState(0)
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -48,11 +50,18 @@ export const JournalEditor = React.forwardRef<
       Underline,
       TextStyle,
       FontSize,
+      CharacterCount.configure({ limit: null }),
     ],
     content: initialContent ?? { type: "doc", content: [{ type: "paragraph" }] },
     immediatelyRender: false,
-    onCreate: ({ editor }) => onReady?.(editor),
-    onUpdate: () => onUpdate?.(),
+    onCreate: ({ editor }) => {
+      setChars(editor.storage.characterCount?.characters() ?? 0)
+      onReady?.(editor)
+    },
+    onUpdate: ({ editor }) => {
+      setChars(editor.storage.characterCount?.characters() ?? 0)
+      onUpdate?.()
+    },
     editorProps: {
       attributes: {
         class:
@@ -77,8 +86,15 @@ export const JournalEditor = React.forwardRef<
   }
 
   return (
-    <div>
+    <div className="relative">
       <EditorContent editor={editor} />
+      <div
+        className="pointer-events-none sticky bottom-1 float-right mr-3 mt-[-1.5rem] rounded bg-card/80 px-2 py-0.5 text-[11px] tabular-nums text-muted-foreground backdrop-blur"
+        aria-live="polite"
+        aria-label="已写字数"
+      >
+        {chars} 字
+      </div>
     </div>
   )
 })

@@ -142,7 +142,11 @@ export function useToggleCompletionMutation() {
   return useMutation({
     mutationFn: (input: ToggleCompletionInput) => toggleCompletionAction(input),
     onSuccess: () => {
+      // Always refresh habit-shaped views (home/today, detail, heatmap range).
       qc.invalidateQueries({ queryKey: habitKeys.all })
+      // Also refresh calendar views so other parts of the app see this
+      // completion without waiting for a manual refetch.
+      qc.invalidateQueries({ queryKey: ["calendar"] })
     },
   })
 }

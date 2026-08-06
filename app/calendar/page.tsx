@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
   ChevronLeft,
@@ -17,14 +18,15 @@ import { Button } from "@/components/ui/button"
 import { LoadingBlock } from "@/components/shared/loading-block"
 import { EmptyState } from "@/components/shared/empty-state"
 import {
+  calendarKeys,
   useCalendarDay,
   useCalendarMonth,
+  type DayDetail,
   type MonthDaySummary,
 } from "@/lib/queries/calendar"
-import {
-  useHabitsQuery,
-  useToggleCompletionMutation,
-} from "@/lib/queries/habits"
+import { useHabitsQuery } from "@/lib/queries/habits"
+import { toggleCompletionAction } from "@/lib/actions/habit-actions"
+import type { ToggleCompletionInput } from "@/lib/validation/habit"
 import {
   addDaysKey,
   formatDateKey,
@@ -274,12 +276,54 @@ function HabitRow({
 function DayPanel({ date }: { date: number }) {
   const { data, isLoading, error } = useCalendarDay(date)
   const { data: habitsRaw } = useHabitsQuery({ status: "active" })
-  const toggle = useToggleCompletionMutation()
+  const qc = useQueryClient()
   const [busyId, setBusyId] = React.useState<number | null>(null)
-  // Refetch when a toggle settles so labels flip back instantly.
-  React.useEffect(() => {
-    if (toggle.isSuccess) setBusyId(null)
-  }, [toggle.isSuccess])
+
+  // Optimistic toggle: flip the day-cache immediately, mutate, roll back on error,
+  // let the server response settle the final state.
+  const toggle = useMutation({
+    mutationFn: (input: ToggleCompletionInput) => toggleCompletionAction(input),
+    onMutate: async (vars) => {
+      const dayKey = calendarKeys.day(date)
+      await qc.cancelQueries({ queryKey: dayKey })
+      const prev = qc.getQueryData<DayDetail>(dayKey)
+      qc.setQueryData(dayKey, (old: DayDetail | undefined) => {
+        if (!old) return old
+        const habit = (habitsRaw ?? []).find(
+          (h: HabitLite) => h.id === vars.habitId
+        ) as HabitLite | undefined
+        const exists = old.habitCompletions.some(
+          (c: CompletionLite) => c.habitId === vars.habitId
+        )
+        const next = exists
+          ? old.habitCompletions.filter(
+              (c: CompletionLite) => c.habitId !== vars.habitId
+            )
+          : [
+              ...old.habitCompletions,
+              {
+                habitId: vars.habitId,
+                habitName: habit?.name ?? "",
+                color: habit?.color ?? null,
+                value: 1,
+                note: null,
+              } as CompletionLite,
+            ]
+        return { ...old, habitCompletions: next }
+      })
+      return { prev }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(calendarKeys.day(date), ctx.prev)
+    },
+    onSettled: () => {
+      // Final read from server — overwrites optimistic state with truth.
+      qc.invalidateQueries({ queryKey: calendarKeys.day(date) })
+      // And let home/today refresh their streaks / todayStatus.
+      qc.invalidateQueries({ queryKey: ["habits"] })
+      setBusyId(null)
+    },
+  })
 
   if (isLoading) return <LoadingBlock lines={3} />
   if (error)
@@ -296,17 +340,20 @@ function DayPanel({ date }: { date: number }) {
 
   const onToggle = async (habit: HabitLite) => {
     setBusyId(habit.id)
-    const res = await toggle.mutateAsync({
-      habitId: habit.id,
-      completedOn: date,
-    })
-    if (!res.ok) {
-      setBusyId(null)
-      toast.error(res.error)
-    } else {
+    try {
+      const res = await toggle.mutateAsync({
+        habitId: habit.id,
+        completedOn: date,
+      })
+      if (!res.ok) {
+        toast.error(res.error)
+        return
+      }
       toast.message(res.data.completed ? "已打卡" : "已取消", {
         description: `${habit.name} · ${formatDateKey(date, "M月d日")}`,
       })
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "打卡失败")
     }
   }
 
