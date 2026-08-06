@@ -2,7 +2,14 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, BookOpen, Check } from "lucide-react"
+import { toast } from "sonner"
+import {
+  ChevronLeft,
+  ChevronRight,
+  BookOpen,
+  Check,
+  Circle,
+} from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,7 +21,16 @@ import {
   useCalendarMonth,
   type MonthDaySummary,
 } from "@/lib/queries/calendar"
-import { addDaysKey, formatDateKey, fromDateKey, todayDateKey } from "@/lib/dates"
+import {
+  useHabitsQuery,
+  useToggleCompletionMutation,
+} from "@/lib/queries/habits"
+import {
+  addDaysKey,
+  formatDateKey,
+  fromDateKey,
+  logicalTodayKey,
+} from "@/lib/dates"
 
 const WEEKDAY_LABELS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"] as const
 
@@ -138,7 +154,7 @@ function CalendarBoard({
   }
 
   const firstKey = startOfMonthGrid(year, month)
-  const today = todayDateKey()
+  const today = logicalTodayKey()
   const cells: number[] = []
   for (let i = 0; i < 42; i++) cells.push(addDaysKey(firstKey, i))
 
@@ -181,12 +197,119 @@ function CalendarBoard({
   )
 }
 
+type HabitLite = {
+  id: number
+  name: string
+  color: string | null
+  status: "active" | "paused" | "archived"
+}
+
+type CompletionLite = {
+  habitId: number
+  habitName: string
+  color: string | null
+  value: number
+  note: string | null
+}
+
+function HabitRow({
+  habit,
+  completed,
+  disabled,
+  onToggle,
+  busy,
+}: {
+  habit: HabitLite
+  completed: CompletionLite | undefined
+  disabled: boolean
+  onToggle: () => void
+  busy: boolean
+}) {
+  return (
+    <li
+      className={[
+        "flex items-center justify-between gap-3 rounded-md border bg-card/40 px-3 py-2 text-sm",
+        disabled ? "opacity-60" : "",
+      ].join(" ")}
+    >
+      <div className="flex min-w-0 items-center gap-2">
+        {completed ? (
+          <Check
+            className="h-4 w-4 shrink-0 text-primary"
+            style={habit.color ? { color: habit.color } : undefined}
+            aria-hidden
+          />
+        ) : (
+          <Circle
+            className="h-4 w-4 shrink-0 text-muted-foreground"
+            aria-hidden
+          />
+        )}
+        <span className="truncate">{habit.name}</span>
+      </div>
+      <div className="flex items-center gap-3 text-muted-foreground">
+        {completed && completed.value > 1 ? (
+          <span className="tabular-nums">{completed.value}</span>
+        ) : null}
+        {completed?.note ? (
+          <span className="max-w-[200px] truncate" title={completed.note}>
+            {completed.note}
+          </span>
+        ) : null}
+        <Button
+          type="button"
+          variant={completed ? "secondary" : "outline"}
+          size="sm"
+          disabled={disabled || busy}
+          aria-pressed={Boolean(completed)}
+          onClick={onToggle}
+        >
+          {completed ? "取消打卡" : "补打卡"}
+        </Button>
+      </div>
+    </li>
+  )
+}
+
 function DayPanel({ date }: { date: number }) {
   const { data, isLoading, error } = useCalendarDay(date)
+  const { data: habitsRaw } = useHabitsQuery({ status: "active" })
+  const toggle = useToggleCompletionMutation()
+  const [busyId, setBusyId] = React.useState<number | null>(null)
+  // Refetch when a toggle settles so labels flip back instantly.
+  React.useEffect(() => {
+    if (toggle.isSuccess) setBusyId(null)
+  }, [toggle.isSuccess])
+
   if (isLoading) return <LoadingBlock lines={3} />
   if (error)
     return <EmptyState title="加载失败" description={(error as Error).message} />
   if (!data) return null
+
+  const logicalToday = logicalTodayKey()
+  const isPastOrToday = date <= logicalToday
+
+  const habits = (habitsRaw ?? []) as HabitLite[]
+  const completions = data.habitCompletions as CompletionLite[]
+  const byHabit = new Map<number, CompletionLite>()
+  for (const c of completions) byHabit.set(c.habitId, c)
+
+  const onToggle = async (habit: HabitLite) => {
+    setBusyId(habit.id)
+    const res = await toggle.mutateAsync({
+      habitId: habit.id,
+      completedOn: date,
+    })
+    if (!res.ok) {
+      setBusyId(null)
+      toast.error(res.error)
+    } else {
+      toast.message(res.data.completed ? "已打卡" : "已取消", {
+        description: `${habit.name} · ${formatDateKey(date, "M月d日")}`,
+      })
+    }
+  }
+
   return (
     <Card>
       <CardContent className="space-y-5 py-5">
@@ -203,32 +326,27 @@ function DayPanel({ date }: { date: number }) {
 
         <section>
           <h3 className="mb-2 text-xs font-medium text-muted-foreground">
-            当天打卡（{data.habitCompletions.length}）
+            当天打卡（{completions.length}/{habits.length}）
           </h3>
-          {data.habitCompletions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">这一天没有打卡。</p>
+          {!isPastOrToday ? (
+            <p className="text-sm text-muted-foreground">
+              未来日期不能打卡。
+            </p>
+          ) : habits.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              还没建习惯。去「习惯」页新建一个吧。
+            </p>
           ) : (
             <ul className="space-y-2" role="list">
-              {data.habitCompletions.map((c: { habitId: number; habitName: string; color: string | null; value: number; note: string | null }) => (
-                <li
-                  key={c.habitId}
-                  className="flex items-center justify-between gap-3 rounded-md border bg-card/40 px-3 py-2 text-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span>{c.habitName}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    {c.value > 1 ? (
-                      <span className="tabular-nums">{c.value}</span>
-                    ) : null}
-                    {c.note ? (
-                      <span className="max-w-[200px] truncate" title={c.note}>
-                        {c.note}
-                      </span>
-                    ) : null}
-                  </div>
-                </li>
+              {habits.map((h) => (
+                <HabitRow
+                  key={h.id}
+                  habit={h}
+                  completed={byHabit.get(h.id)}
+                  disabled={!isPastOrToday || h.status !== "active"}
+                  busy={busyId === h.id && toggle.isPending}
+                  onToggle={() => onToggle(h)}
+                />
               ))}
             </ul>
           )}
@@ -289,8 +407,10 @@ function DayPanel({ date }: { date: number }) {
 }
 
 function currentMonth(): { year: number; month: number } {
-  const now = new Date()
-  return { year: now.getFullYear(), month: now.getMonth() + 1 }
+  const today = logicalTodayKey()
+  const y = Math.floor(today / 10000)
+  const m = Math.floor((today % 10000) / 100)
+  return { year: y, month: m }
 }
 
 export default function CalendarPage() {
@@ -314,7 +434,7 @@ export default function CalendarPage() {
   const goToday = () => {
     const t = currentMonth()
     setView(t)
-    setSelectedDate(todayDateKey())
+    setSelectedDate(logicalTodayKey())
   }
 
   return (

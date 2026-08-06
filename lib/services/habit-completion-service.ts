@@ -8,7 +8,7 @@ import {
   habits,
   type HabitCompletion,
 } from "@/db/schema"
-import { todayDateKey } from "@/lib/dates"
+import { logicalTodayKey } from "@/lib/dates"
 import {
   toggleCompletionInput,
   upsertCompletionInput,
@@ -40,7 +40,8 @@ export async function toggleHabitCompletion(
   raw: ToggleCompletionInput
 ): Promise<{ completed: boolean }> {
   const input = toggleCompletionInput.parse(raw)
-  const today = todayDateKey()
+  // "Today" respects the day-roll rule (≤02:00 → previous day).
+  const today = logicalTodayKey()
 
   const [habit] = await db.select().from(habits).where(eq(habits.id, input.habitId)).limit(1)
   if (!habit) throw new Error("habit not found")
@@ -91,7 +92,7 @@ export async function upsertHabitCompletion(
   raw: UpsertCompletionInput
 ): Promise<HabitCompletion> {
   const input = upsertCompletionInput.parse(raw)
-  const today = todayDateKey()
+  const today = logicalTodayKey()
 
   const [habit] = await db.select().from(habits).where(eq(habits.id, input.habitId)).limit(1)
   if (!habit) throw new Error("habit not found")

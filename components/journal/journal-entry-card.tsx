@@ -6,7 +6,7 @@ import { Pencil } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { formatDateKey, todayDateKey } from "@/lib/dates"
+import { formatDateKey, logicalTodayKey } from "@/lib/dates"
 
 interface Category {
   id: number
@@ -25,7 +25,7 @@ interface Entry {
 }
 
 export function JournalEntryCard({ entry }: { entry: Entry }) {
-  const isToday = entry.entryDate === todayDateKey()
+  const isToday = entry.entryDate === logicalTodayKey()
   return (
     <Card>
       <CardHeader className="pb-2">

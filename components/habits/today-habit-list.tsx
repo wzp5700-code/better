@@ -13,11 +13,11 @@ import {
   useHabitsQuery,
   useToggleCompletionMutation,
 } from "@/lib/queries/habits"
-import { todayDateKey } from "@/lib/dates"
+import { logicalTodayKey } from "@/lib/dates"
 import type { HabitWithStreak } from "@/lib/services/habit-service"
 
 export function TodayHabitList() {
-  const today = React.useMemo(() => todayDateKey(), [])
+  const today = React.useMemo(() => logicalTodayKey(), [])
   const { data, isLoading, error } = useHabitsQuery({ status: "active" })
   const toggle = useToggleCompletionMutation()
   const items = (data ?? []) as HabitWithStreak[]

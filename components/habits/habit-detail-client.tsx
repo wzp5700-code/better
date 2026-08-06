@@ -18,7 +18,7 @@ import {
   useHabitCompletionsQuery,
   useHabitQuery,
 } from "@/lib/queries/habits"
-import { addDaysKey, formatDateKey, todayDateKey, WEEKDAY_LABELS_CN_SUN_FIRST } from "@/lib/dates"
+import { addDaysKey, formatDateKey, logicalTodayKey, WEEKDAY_LABELS_CN_SUN_FIRST } from "@/lib/dates"
 import type { Habit } from "@/db/schema"
 
 function describeFrequency(h: Habit): string {
@@ -36,7 +36,7 @@ function describeFrequency(h: Habit): string {
 
 export function HabitDetailClient({ habitId }: { habitId: number }) {
   const habitQuery = useHabitQuery(habitId)
-  const today = React.useMemo(() => todayDateKey(), [])
+  const today = React.useMemo(() => logicalTodayKey(), [])
   const from = React.useMemo(() => addDaysKey(today, -364), [today])
   const completionsQuery = useHabitCompletionsQuery(habitId, from, today)
 

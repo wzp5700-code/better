@@ -10,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { addDaysKey, fromDateKey, todayDateKey, toDateKey } from "@/lib/dates"
+import { addDaysKey, fromDateKey, logicalTodayKey, toDateKey } from "@/lib/dates"
 import { cn } from "@/lib/utils"
 
 interface Completion {
@@ -70,7 +70,7 @@ export function HabitHeatmap({
   className,
   onCellClick,
 }: Props) {
-  const today = React.useMemo(() => todayDateKey(), [])
+  const today = React.useMemo(() => logicalTodayKey(), [])
   const from = addDaysKey(today, -364)
 
   const completionMap = React.useMemo(() => {

@@ -15,7 +15,7 @@ import {
 import { EditorToolbar } from "@/components/journal/editor/editor-toolbar"
 import { CategoryPicker } from "@/components/journal/category-picker-popover"
 import { useCreateJournalMutation } from "@/lib/queries/journal"
-import { isValidDateKey, todayDateKey } from "@/lib/dates"
+import { isValidDateKey, logicalTodayKey } from "@/lib/dates"
 import { LoadingBlock } from "@/components/shared/loading-block"
 
 function NewJournalInner() {
@@ -25,7 +25,7 @@ function NewJournalInner() {
   const entryDate =
     dateParam && isValidDateKey(Number(dateParam))
       ? Number(dateParam)
-      : todayDateKey()
+      : logicalTodayKey()
 
   const editorRef = React.useRef<JournalEditorHandle>(null)
   const [toolbarEditor, setToolbarEditor] = React.useState<Editor | null>(null)

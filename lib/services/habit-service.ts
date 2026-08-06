@@ -11,7 +11,7 @@ import {
   type HabitCompletion,
   type HabitStreak,
 } from "@/db/schema"
-import { todayDateKey, toDateKey } from "@/lib/dates"
+import { logicalTodayKey, toDateKey } from "@/lib/dates"
 import { createHabitInput, updateHabitInput, type CreateHabitInput, type UpdateHabitInput } from "@/lib/validation/habit"
 import { isHabitDueOn, type FrequencyType, type HabitLike } from "./streak-service"
 import { refreshCurrentStreak } from "./streak-service"
@@ -163,7 +163,7 @@ export async function listHabits(filter?: {
 
   const streakMap = new Map(streaks.map((s) => [s.habitId, s]))
 
-  const today = todayDateKey()
+  const today = logicalTodayKey()
   const todayCompletions =
     ids.length === 0
       ? []
@@ -211,7 +211,7 @@ export async function getHabit(id: number): Promise<HabitDetail | null> {
     .where(eq(habitCompletions.habitId, id))
     .orderBy(desc(habitCompletions.completedOn))
 
-  const today = todayDateKey()
+  const today = logicalTodayKey()
   const like = habitToLike(row)
   let todayStatus: HabitWithStreak["todayStatus"]
   if (row.status === "archived") todayStatus = "archived"

@@ -5,6 +5,14 @@
  * The week starts on Monday (ISO 8601).
  */
 
+/**
+ * Day-roll hour: times BEFORE this hour on a given calendar date are
+ * considered part of the previous day. E.g. with DAY_ROLL_HOUR = 2,
+ * 1:30 AM is still "yesterday" for the user — they likely stayed up late.
+ * Confirmed rule 2026-08-06.
+ */
+export const DAY_ROLL_HOUR = 2
+
 const DATE_KEY_MIN = 19000101
 const DATE_KEY_MAX = 29991231
 
@@ -13,6 +21,29 @@ export function toDateKey(date: Date): number {
   const m = date.getMonth() + 1
   const d = date.getDate()
   return y * 10000 + m * 100 + d
+}
+
+/**
+ * "Logical today" respecting the day-roll rule: if now is between
+ * 00:00 and (DAY_ROLL_HOUR - 1), return the previous calendar date's
+ * DateKey. Otherwise return todayDateKey(now).
+ *
+ * Use this anywhere the user-facing "today" matters:
+ *   - which day a quick check-in belongs to (when caller omits completedOn)
+ *   - which calendar grid cell to highlight
+ *   - default entryDate for a new journal entry
+ *   - streak referenceDate
+ *
+ * Use plain `todayDateKey(now)` only when the cutoff rule would be
+ * wrong (e.g. timezone-unambiguous archival dates, backup tooling).
+ */
+export function logicalTodayKey(now: Date = new Date()): number {
+  if (now.getHours() < DAY_ROLL_HOUR) {
+    const prev = new Date(now)
+    prev.setDate(prev.getDate() - 1)
+    return toDateKey(prev)
+  }
+  return toDateKey(now)
 }
 
 export function fromDateKey(key: number): Date {

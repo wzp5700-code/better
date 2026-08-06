@@ -10,7 +10,7 @@ import { LoadingBlock } from "@/components/shared/loading-block"
 import { JournalEntryCard } from "@/components/journal/journal-entry-card"
 import { JournalFilters } from "@/components/journal/journal-filters"
 import { useJournalEntriesQuery } from "@/lib/queries/journal"
-import { todayDateKey } from "@/lib/dates"
+import { logicalTodayKey } from "@/lib/dates"
 
 export function JournalTimeline({
   initialTag,
@@ -41,7 +41,7 @@ export function JournalTimeline({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <JournalFilters />
         <Button asChild>
-          <Link href={`/journal/new?date=${todayDateKey()}`}>
+          <Link href={`/journal/new?date=${logicalTodayKey()}`}>
             <Plus className="h-4 w-4" /> 写日记
           </Link>
         </Button>
@@ -52,7 +52,7 @@ export function JournalTimeline({
           description="今天想留点什么吗？"
           action={
             <Button asChild>
-              <Link href={`/journal/new?date=${todayDateKey()}`}>
+              <Link href={`/journal/new?date=${logicalTodayKey()}`}>
                 <Plus className="h-4 w-4" /> 写第一篇
               </Link>
             </Button>

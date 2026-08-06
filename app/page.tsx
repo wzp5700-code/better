@@ -4,10 +4,10 @@ import { PageHeader } from "@/components/layout/page-header"
 import { TodayHabitList } from "@/components/habits/today-habit-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { formatDateKey, todayDateKey } from "@/lib/dates"
+import { formatDateKey, logicalTodayKey } from "@/lib/dates"
 
 export default function HomePage() {
-  const today = todayDateKey()
+  const today = logicalTodayKey()
   return (
     <div className="space-y-8">
       <PageHeader

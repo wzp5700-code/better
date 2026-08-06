@@ -4,7 +4,7 @@ import { and, eq, gt, isNotNull, isNull, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { habits, pushDeliveryLog, pushTokens } from "@/db/schema"
-import { todayDateKey } from "@/lib/dates"
+import { logicalTodayKey } from "@/lib/dates"
 import { sendFcmMessage } from "./fcm-server"
 
 /**
@@ -114,7 +114,7 @@ export async function dispatchOnce(now: Date = new Date()): Promise<DispatchResu
     return { scanned: validHabits.length, sent: 0, failed: 0, tokensRevoked: 0 }
   }
 
-  const today = todayDateKey(now)
+  const today = logicalTodayKey(now)
   let sent = 0
   let failed = 0
   let tokensRevoked = 0
@@ -213,7 +213,7 @@ export async function dispatchOnce(now: Date = new Date()): Promise<DispatchResu
 }
 
 // Re-export utilities for testing
-export { todayDateKey }
+export { logicalTodayKey }
 
 // Helper for cleaning old log entries (optional)
 export async function pruneOldDeliveryLogs(keepDays = 30): Promise<number> {

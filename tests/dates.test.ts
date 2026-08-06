@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest"
 
 import {
   addDaysKey,
+  DAY_ROLL_HOUR,
   diffDays,
   formatDateKey,
   fromDateKey,
   isValidDateKey,
+  logicalTodayKey,
   startOfWeekKey,
   toDateKey,
   todayDateKey,
@@ -72,5 +74,39 @@ describe("dates", () => {
 
   it("fromDateKey throws on invalid", () => {
     expect(() => fromDateKey(20260230)).toThrow()
+  })
+
+  it("logicalTodayKey — ≥ DAY_ROLL_HOUR counts as same calendar day", () => {
+    // 10:00 AM on Aug 6, 2026 → logical today = 2026-08-06
+    const morning = new Date(2026, 7, 6, 10, 0, 0)
+    expect(logicalTodayKey(morning)).toBe(20260806)
+    expect(DAY_ROLL_HOUR).toBe(2)
+  })
+
+  it("logicalTodayKey — 00:00 through (DAY_ROLL_HOUR-1):59 rolls back one day", () => {
+    // 00:30 on Aug 7, 2026 → logical today = 2026-08-06 (still up late)
+    const lateNight = new Date(2026, 7, 7, 0, 30, 0)
+    expect(logicalTodayKey(lateNight)).toBe(20260806)
+    // 01:59 last second before roll-over
+    const almost = new Date(2026, 7, 7, 1, 59, 59)
+    expect(logicalTodayKey(almost)).toBe(20260806)
+  })
+
+  it("logicalTodayKey — exactly DAY_ROLL_HOUR is the new day", () => {
+    // 02:00 sharp on Aug 7, 2026 → logical today = 2026-08-07
+    const justIn = new Date(2026, 7, 7, 2, 0, 0)
+    expect(logicalTodayKey(justIn)).toBe(20260807)
+    // 23:59 is unambiguously the current calendar day
+    const evening = new Date(2026, 7, 6, 23, 59, 0)
+    expect(logicalTodayKey(evening)).toBe(20260806)
+  })
+
+  it("logicalTodayKey — rolls across month and year boundaries", () => {
+    // 00:15 on Mar 1, 2026 → still Feb 28
+    const newMonth = new Date(2026, 2, 1, 0, 15, 0)
+    expect(logicalTodayKey(newMonth)).toBe(20260228)
+    // 00:15 on Jan 1, 2026 → still Dec 31, 2025
+    const newYear = new Date(2026, 0, 1, 0, 15, 0)
+    expect(logicalTodayKey(newYear)).toBe(20251231)
   })
 })
